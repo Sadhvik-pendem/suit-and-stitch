@@ -275,16 +275,17 @@ class NotificationService {
     // 2. Try Brevo HTTP API (Port 443 HTTPS - Bypasses Render SMTP port blocking)
     if (ENV.BREVO_API_KEY) {
       try {
-        const fromEmail = ENV.SMTP_USER || ENV.FROM_EMAIL || 'concierge@suitstitch.com';
+        const fromEmail = (ENV.BREVO_SENDER_EMAIL || ENV.SMTP_USER || ENV.FROM_EMAIL || 'concierge@suitstitch.com').trim();
         const res = await fetch('https://api.brevo.com/v3/smtp/email', {
           method: 'POST',
           headers: {
-            'api-key': ENV.BREVO_API_KEY,
+            'api-key': ENV.BREVO_API_KEY.trim(),
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           body: JSON.stringify({
             sender: { name: 'Suit & Stitch Atelier', email: fromEmail },
-            to: [{ email: to }],
+            to: [{ email: to.trim() }],
             subject,
             htmlContent: html,
           }),
@@ -292,6 +293,9 @@ class NotificationService {
         const data = await res.json() as any;
         console.log('[NotificationService] Brevo API response:', data);
         if (res.ok && data?.messageId) return true;
+        if (!res.ok) {
+          console.error('[NotificationService] Brevo API error details:', data);
+        }
       } catch (err) {
         console.warn('[NotificationService] Brevo API error:', err);
       }

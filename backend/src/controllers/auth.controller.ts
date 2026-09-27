@@ -261,9 +261,9 @@ export async function sendOtp(req: Request, res: Response, next: NextFunction): 
       : await prisma.user.findFirst({ where: { phone: key } });
 
     // Determine gateway configuration status
-    const isSmtpConfigured = !!(ENV.SMTP_HOST && ENV.SMTP_USER && ENV.SMTP_PASS);
+    const isEmailConfigured = !!((ENV.SMTP_HOST && ENV.SMTP_USER && ENV.SMTP_PASS) || ENV.BREVO_API_KEY || ENV.RESEND_API_KEY);
     const isSmsConfigured = !!(ENV.FAST2SMS_API_KEY || (ENV.TWILIO_ACCOUNT_SID && ENV.TWILIO_AUTH_TOKEN));
-    const isGatewayConfigured = isEmail ? isSmtpConfigured : isSmsConfigured;
+    const isGatewayConfigured = isEmail ? isEmailConfigured : isSmsConfigured;
 
     // Dispatch real email or real SMS
     let deliverySucceeded = false;

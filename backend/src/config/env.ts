@@ -21,4 +21,5 @@ export const ENV = {
   FAST2SMS_API_KEY: process.env.FAST2SMS_API_KEY || '',
   RESEND_API_KEY: process.env.RESEND_API_KEY || '',
   BREVO_API_KEY: process.env.BREVO_API_KEY || '',
+  BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || process.env.SMTP_USER || '',
 };
