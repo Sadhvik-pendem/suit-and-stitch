@@ -1172,6 +1172,8 @@
       const [identifier, setIdentifier] = useState('');
       const [otpStep, setOtpStep] = useState('input'); // 'input' | 'verify'
       const [otpCode, setOtpCode] = useState('');
+      const [demoCode, setDemoCode] = useState('');
+      const [isGatewayConfigured, setIsGatewayConfigured] = useState(true);
       const [otpTimer, setOtpTimer] = useState(60);
       const [otpLoading, setOtpLoading] = useState(false);
       const [otpError, setOtpError] = useState('');
@@ -1215,7 +1217,13 @@
           if (res.ok && data.success) {
             setOtpStep('verify');
             setOtpTimer(60);
-            if (showToast) showToast(`Verification code dispatched to ${identifier}!`, 'info');
+            setIsGatewayConfigured(data.isGatewayConfigured ?? true);
+            if (data.demoCode) {
+              setDemoCode(data.demoCode);
+            } else {
+              setDemoCode('');
+            }
+            if (showToast) showToast(data.message || `Verification code dispatched to ${identifier}!`, 'info');
           } else {
             setOtpError(data.message || 'Failed to dispatch verification code.');
           }
@@ -1482,9 +1490,35 @@
                     <span className="text-xs text-neutral-600 block">
                       A 6-digit verification code has been dispatched to: <strong className="text-neutral-900">{identifier}</strong>
                     </span>
-                    <p className="text-[11px] text-neutral-500 font-light mt-1.5 max-w-sm mx-auto">
-                      Please check your email inbox or mobile device for your one-time code and enter it below.
-                    </p>
+
+                    {isGatewayConfigured ? (
+                      <p className="text-[11px] text-neutral-500 font-light mt-1.5 max-w-sm mx-auto">
+                        Please check your email inbox or mobile SMS for your one-time code and enter it below.
+                      </p>
+                    ) : (
+                      <div className="mt-3.5 p-3.5 bg-[#FAF8F5] border border-[#C5A880] rounded-sm text-center shadow-sm">
+                        <span className="text-[10px] uppercase font-mono tracking-widest text-[#C5A880] font-bold block mb-1">
+                          ✦ Gateway Notice: Live SMS/Email Key Not Configured
+                        </span>
+                        <p className="text-[10px] text-neutral-500 font-light leading-relaxed mb-2">
+                          Add <code>SMTP_USER</code> or <code>FAST2SMS_API_KEY</code> in Render Environment to receive live phone SMS/email.
+                        </p>
+                        {demoCode && (
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-lg font-mono font-bold tracking-[0.2em] text-neutral-900 bg-white border border-[#E8E4DA] px-3 py-1 rounded-sm">
+                              {demoCode}
+                            </span>
+                            <button 
+                              type="button" 
+                              onClick={() => setOtpCode(demoCode)}
+                              className="text-[11px] bg-neutral-900 text-white hover:bg-[#C5A880] hover:text-black transition-colors px-3 py-1.5 font-semibold rounded-sm focus-luxury"
+                            >
+                              Auto-fill Code
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div>

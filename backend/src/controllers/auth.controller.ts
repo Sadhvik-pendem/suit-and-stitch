@@ -260,18 +260,32 @@ export async function sendOtp(req: Request, res: Response, next: NextFunction): 
       ? await prisma.user.findUnique({ where: { email: key } })
       : await prisma.user.findFirst({ where: { phone: key } });
 
-    // If identifier is an email, attempt real email transmission via SMTP (if configured)
+    // Determine gateway configuration status
+    const isSmtpConfigured = !!(ENV.SMTP_HOST && ENV.SMTP_USER && ENV.SMTP_PASS);
+    const isSmsConfigured = !!(ENV.FAST2SMS_API_KEY || (ENV.TWILIO_ACCOUNT_SID && ENV.TWILIO_AUTH_TOKEN));
+    const isGatewayConfigured = isEmail ? isSmtpConfigured : isSmsConfigured;
+
+    // Dispatch real email or real SMS
     if (isEmail) {
       notificationService.sendLoginOtp(key, rawOtp).catch((err) => {
         console.warn('[sendOtp] Real email transmission error:', err);
+      });
+    } else {
+      notificationService.sendLoginSms(key, rawOtp).catch((err) => {
+        console.warn('[sendOtp] Real SMS transmission error:', err);
       });
     }
 
     res.status(200).json({
       success: true,
-      message: `A 6-digit verification code has been dispatched to ${identifier}.`,
+      message: isGatewayConfigured 
+        ? `A 6-digit verification code has been dispatched to ${identifier}.`
+        : `Verification code generated. (Email/SMS gateway not yet active on server).`,
       expiresInSeconds: 300,
       userExists: !!existingUser,
+      isGatewayConfigured,
+      channel: isEmail ? 'email' : 'sms',
+      ...(!isGatewayConfigured && { demoCode: rawOtp }),
     });
   } catch (error) {
     next(error);
