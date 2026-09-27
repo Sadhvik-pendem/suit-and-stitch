@@ -1172,7 +1172,6 @@
       const [identifier, setIdentifier] = useState('');
       const [otpStep, setOtpStep] = useState('input'); // 'input' | 'verify'
       const [otpCode, setOtpCode] = useState('');
-      const [demoCode, setDemoCode] = useState('');
       const [otpTimer, setOtpTimer] = useState(60);
       const [otpLoading, setOtpLoading] = useState(false);
       const [otpError, setOtpError] = useState('');
@@ -1216,19 +1215,12 @@
           if (res.ok && data.success) {
             setOtpStep('verify');
             setOtpTimer(60);
-            if (data.demoCode) {
-              setDemoCode(data.demoCode);
-            }
             if (showToast) showToast(`Verification code dispatched to ${identifier}!`, 'info');
           } else {
             setOtpError(data.message || 'Failed to dispatch verification code.');
           }
         } catch (err) {
-          const simulated = String(Math.floor(100000 + Math.random() * 900000));
-          setDemoCode(simulated);
-          setOtpStep('verify');
-          setOtpTimer(60);
-          if (showToast) showToast(`Demo verification code generated: ${simulated}`, 'info');
+          setOtpError('Network error while requesting verification code. Please try again.');
         } finally {
           setOtpLoading(false);
         }
@@ -1265,17 +1257,7 @@
             setOtpError(data.message || 'Invalid or expired verification code.');
           }
         } catch (err) {
-          if (otpCode.trim() === demoCode) {
-            onLoginSuccess({
-              id: 'guest_' + Date.now(),
-              name: identifier.includes('@') ? identifier.split('@')[0] : 'Bespoke Client',
-              email: identifier.includes('@') ? identifier : `${identifier.replace(/\D/g, '')}@guest.suitstitch.com`,
-              role: 'customer',
-              phone: identifier
-            });
-            return;
-          }
-          setOtpError('Verification failed. Please check connection.');
+          setOtpError('Verification failed. Please check connection and try again.');
         } finally {
           setOtpLoading(false);
         }
@@ -1498,32 +1480,11 @@
                 <form onSubmit={handleVerifyOtp} className="space-y-5">
                   <div className="text-center">
                     <span className="text-xs text-neutral-600 block">
-                      Verification code sent to: <strong className="text-neutral-900">{identifier}</strong>
+                      A 6-digit verification code has been dispatched to: <strong className="text-neutral-900">{identifier}</strong>
                     </span>
-
-                    {/* Prominent Instant Test Code Card */}
-                    {demoCode && (
-                      <div className="mt-4 p-4 bg-[#FAF8F5] border border-[#C5A880] rounded-sm text-center shadow-sm">
-                        <span className="text-[10px] uppercase font-mono tracking-widest text-[#C5A880] font-bold block mb-1">
-                          ✦ Instant Verification Code
-                        </span>
-                        <div className="flex items-center justify-center gap-3 my-2">
-                          <span className="text-xl font-mono font-bold tracking-[0.25em] text-neutral-900 bg-white border border-[#E8E4DA] px-4 py-1.5 rounded-sm shadow-inner">
-                            {demoCode}
-                          </span>
-                          <button 
-                            type="button" 
-                            onClick={() => setOtpCode(demoCode)}
-                            className="text-xs bg-neutral-900 text-white hover:bg-[#C5A880] hover:text-black transition-colors px-3 py-2 font-semibold rounded-sm focus-luxury"
-                          >
-                            Auto-fill Code
-                          </button>
-                        </div>
-                        <p className="text-[10px] text-neutral-500 font-light mt-1">
-                          Click <strong>Auto-fill Code</strong> or type the digits into the box below.
-                        </p>
-                      </div>
-                    )}
+                    <p className="text-[11px] text-neutral-500 font-light mt-1.5 max-w-sm mx-auto">
+                      Please check your email inbox or mobile device for your one-time code and enter it below.
+                    </p>
                   </div>
 
                   <div>

@@ -272,7 +272,6 @@ export async function sendOtp(req: Request, res: Response, next: NextFunction): 
       message: `A 6-digit verification code has been dispatched to ${identifier}.`,
       expiresInSeconds: 300,
       userExists: !!existingUser,
-      demoCode: rawOtp, // Provided for instant demo & evaluation without requiring paid SMS gateway
     });
   } catch (error) {
     next(error);
