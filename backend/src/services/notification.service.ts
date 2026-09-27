@@ -1,0 +1,168 @@
+import nodemailer, { Transporter } from 'nodemailer';
+import { ENV } from '../config/env';
+
+export interface OrderNotificationPayload {
+  id: string;
+  customerEmail: string;
+  customerName: string;
+  customerPhone?: string;
+  otp?: string;
+  appointmentSlot?: string;
+  boutiqueName?: string;
+  designName?: string;
+  price?: number;
+  deliveryAddress?: string;
+}
+
+class NotificationService {
+  private transporter: Transporter | null = null;
+
+  constructor() {
+    this.initTransporter();
+  }
+
+  private initTransporter(): void {
+    if (ENV.SMTP_HOST && ENV.SMTP_USER && ENV.SMTP_PASS) {
+      try {
+        this.transporter = nodemailer.createTransport({
+          host: ENV.SMTP_HOST,
+          port: ENV.SMTP_PORT,
+          secure: ENV.SMTP_PORT === 465,
+          auth: {
+            user: ENV.SMTP_USER,
+            pass: ENV.SMTP_PASS,
+          },
+        });
+        console.log('[NotificationService] Connected to SMTP server:', ENV.SMTP_HOST);
+      } catch (err) {
+        console.warn('[NotificationService] Failed to initialize SMTP transporter:', err);
+        this.transporter = null;
+      }
+    }
+  }
+
+  /**
+   * 1. Send Booking Confirmation & Doorstep Security OTP
+   */
+  async sendOrderConfirmationAndOtp(order: OrderNotificationPayload): Promise<boolean> {
+    const subject = `Bespoke Appointment Confirmed • Order #${order.id} [OTP: ${order.otp}]`;
+    const html = `
+      <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #FAF8F5; padding: 32px; border: 1px solid #E8E4DA; color: #121212;">
+        <div style="border-bottom: 2px solid #C5A880; padding-bottom: 16px; margin-bottom: 24px;">
+          <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: #C5A880; font-weight: bold;">Suit & Stitch Atelier</span>
+          <h1 style="font-family: Georgia, serif; font-size: 26px; margin: 8px 0 0 0; font-weight: normal;">Appointment Confirmed</h1>
+        </div>
+
+        <p style="font-size: 14px; line-height: 1.6; color: #4A4A4A;">Dear <strong>${order.customerName}</strong>,</p>
+        <p style="font-size: 14px; line-height: 1.6; color: #4A4A4A;">
+          Your bespoke appointment for <strong>${order.designName}</strong> crafted by <strong>${order.boutiqueName}</strong> is confirmed.
+        </p>
+
+        <!-- Doorstep Security OTP Card -->
+        <div style="background: #FFFFFF; border: 1px solid #E8E4DA; border-left: 4px solid #C5A880; padding: 20px; margin: 24px 0; text-align: center;">
+          <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #737373; display: block; margin-bottom: 8px;">Doorstep Verification Code (OTP)</span>
+          <span style="font-family: monospace; font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #121212; display: block;">${order.otp}</span>
+          <span style="font-size: 11px; color: #A3A3A3; display: block; margin-top: 8px;">Provide this 4-digit code to the visiting Field Associate upon arrival.</span>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px;">
+          <tr>
+            <td style="padding: 8px 0; color: #737373; border-bottom: 1px solid #E8E4DA;">Appointment Slot:</td>
+            <td style="padding: 8px 0; font-weight: bold; text-align: right; border-bottom: 1px solid #E8E4DA;">${order.appointmentSlot}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #737373; border-bottom: 1px solid #E8E4DA;">Studio Atelier:</td>
+            <td style="padding: 8px 0; font-weight: bold; text-align: right; border-bottom: 1px solid #E8E4DA;">${order.boutiqueName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #737373; border-bottom: 1px solid #E8E4DA;">Estimated Investment:</td>
+            <td style="padding: 8px 0; font-weight: bold; text-align: right; border-bottom: 1px solid #E8E4DA;">₹${(order.price || 0).toLocaleString('en-IN')}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #737373;">Fitting Address:</td>
+            <td style="padding: 8px 0; font-weight: bold; text-align: right;">${order.deliveryAddress}</td>
+          </tr>
+        </table>
+
+        <p style="font-size: 12px; color: #737373; line-height: 1.5; border-top: 1px solid #E8E4DA; padding-top: 16px;">
+          Need to reschedule? Contact your atelier concierge directly through the Suit & Stitch live dashboard.
+        </p>
+      </div>
+    `;
+
+    console.log(`
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                   [SUIT & STITCH NOTIFICATION DISPATCH]                  ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║  Type:    BOOKING_CONFIRMATION & DOORSTEP OTP                             ║
+║  To:      ${order.customerEmail} (${order.customerPhone || 'N/A'})
+║  Order:   ${order.id}                                                      ║
+║  OTP:     >>> ${order.otp} <<< (4-DIGIT VERIFICATION CODE)                 ║
+║  Design:  ${order.designName}                                             ║
+║  Atelier: ${order.boutiqueName}                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+    `);
+
+    return this.deliverEmail(order.customerEmail, subject, html);
+  }
+
+  /**
+   * 2. Send Measurement Telemetry Received Notification
+   */
+  async sendMeasurementCompletion(order: OrderNotificationPayload): Promise<boolean> {
+    const subject = `Fitting Completed • Sizing Telemetry Sent to Studio #${order.id}`;
+    const html = `
+      <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #FAF8F5; padding: 32px; border: 1px solid #E8E4DA;">
+        <h2 style="font-family: Georgia, serif; color: #121212;">Measurements Successfully Recorded</h2>
+        <p>Dear ${order.customerName}, your doorstep fitting visit has concluded. Your 6-point biometric measurements have been securely verified and transferred to <strong>${order.boutiqueName}</strong> for precision pattern drafting.</p>
+        <p>Order Reference: <strong>${order.id}</strong></p>
+      </div>
+    `;
+
+    console.log(`[Notification] Telemetry recorded notification sent to ${order.customerEmail} for order ${order.id}`);
+    return this.deliverEmail(order.customerEmail, subject, html);
+  }
+
+  /**
+   * 3. Send Production & Dispatch Notification
+   */
+  async sendProductionStatusUpdate(order: OrderNotificationPayload, statusMessage: string): Promise<boolean> {
+    const subject = `Atelier Update: Order #${order.id} • ${statusMessage}`;
+    const html = `
+      <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #FAF8F5; padding: 32px; border: 1px solid #E8E4DA;">
+        <h2 style="font-family: Georgia, serif; color: #121212;">${statusMessage}</h2>
+        <p>Dear ${order.customerName}, your handcrafted garment <strong>${order.designName}</strong> status is now: <strong>${statusMessage}</strong>.</p>
+        <p>Track live delivery progress on your client dashboard.</p>
+      </div>
+    `;
+
+    console.log(`[Notification] Status update '${statusMessage}' sent to ${order.customerEmail}`);
+    return this.deliverEmail(order.customerEmail, subject, html);
+  }
+
+  /**
+   * Internal email delivery method
+   */
+  private async deliverEmail(to: string, subject: string, html: string): Promise<boolean> {
+    if (!this.transporter) {
+      // SMTP not configured - simulated delivery succeeded
+      return true;
+    }
+
+    try {
+      await this.transporter.sendMail({
+        from: `Suit & Stitch Atelier <${ENV.FROM_EMAIL}>`,
+        to,
+        subject,
+        html,
+      });
+      return true;
+    } catch (err) {
+      console.warn('[NotificationService] Email delivery failure:', err);
+      return false;
+    }
+  }
+}
+
+export const notificationService = new NotificationService();
+export default notificationService;

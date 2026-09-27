@@ -1,0 +1,151 @@
+// This is your Prisma schema file for PostgreSQL
+// Suit & Stitch - Bespoke Tailoring Marketplace Platform
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgcrypto]
+}
+
+enum Role {
+  CUSTOMER
+  ASSOCIATE
+  BOUTIQUE_PARTNER
+  DELIVERY_AGENT
+}
+
+enum OrderStatus {
+  BOOKED
+  ASSOCIATE_ARRIVING
+  MEASUREMENTS_TAKEN
+  IN_PRODUCTION
+  DISPATCHED
+  DELIVERED
+}
+
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @db.VarChar(255)
+  role         Role
+  name         String   @db.VarChar(120)
+  phone        String   @db.VarChar(30)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+
+  // One-to-one optional relation: If the user is a BOUTIQUE_PARTNER
+  boutique Boutique?
+
+  // Relations to orders
+  customerOrders          Order[] @relation("CustomerOrders")
+  assignedAssociateOrders Order[] @relation("AssociateOrders")
+  assignedDeliveryOrders  Order[] @relation("DeliveryOrders")
+
+  @@index([role], name: "idx_users_role")
+  @@index([email], name: "idx_users_email")
+  @@map("users")
+}
+
+model Boutique {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(150)
+  location    String   @db.VarChar(255)
+  rating      Float    @default(5.0) @db.DoublePrecision
+  description String   @db.Text
+  bannerUrl   String   @db.VarChar(512)
+  userId      String   @unique @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  // One-to-one relation with the Boutique Partner user
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Catalog designs crafted by this atelier
+  designs GarmentDesign[]
+
+  // Orders routed to this atelier
+  orders Order[]
+
+  @@index([userId], name: "idx_boutiques_user_id")
+  @@map("boutiques")
+}
+
+model GarmentDesign {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  boutiqueId   String   @db.Uuid
+  name         String   @db.VarChar(200)
+  category     String   @db.VarChar(80)
+  price        Int // Price in INR
+  leadTimeDays Int      @default(7)
+  imageUrl     String   @db.VarChar(512)
+  description  String   @db.Text
+  fabrics      String[] // Native PostgreSQL text array
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+
+  // Atelier relationship
+  boutique Boutique @relation(fields: [boutiqueId], references: [id], onDelete: Cascade)
+
+  // Associated orders
+  orders Order[]
+
+  @@index([boutiqueId], name: "idx_designs_boutique_id")
+  @@index([category], name: "idx_designs_category")
+  @@map("garment_designs")
+}
+
+model Order {
+  id                  String      @id // Format: ORD-XXXX-YYYY (e.g. ORD-7291-2026)
+  customerId          String      @db.Uuid
+  boutiqueId          String      @db.Uuid
+  designId            String      @db.Uuid
+  selectedFabric      String      @db.VarChar(120)
+  deliveryAddress     String      @db.Text
+  appointmentSlot     String      @db.VarChar(120)
+  status              OrderStatus @default(BOOKED)
+  otpHash             String      @db.VarChar(255) // Bcrypt / Argon2 / SHA-256 hash of 4-digit OTP
+  assignedAssociateId String?     @db.Uuid
+  assignedDeliveryId  String?     @db.Uuid
+  createdAt           DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime    @updatedAt @db.Timestamptz(6)
+
+  // Foreign key associations
+  customer          User          @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Cascade)
+  boutique          Boutique      @relation(fields: [boutiqueId], references: [id], onDelete: Cascade)
+  design            GarmentDesign @relation(fields: [designId], references: [id], onDelete: Restrict)
+  assignedAssociate User?         @relation("AssociateOrders", fields: [assignedAssociateId], references: [id], onDelete: SetNull)
+  assignedDelivery  User?         @relation("DeliveryOrders", fields: [assignedDeliveryId], references: [id], onDelete: SetNull)
+
+  // One-to-one biometric telemetry measurements
+  measurementTelemetry MeasurementTelemetry?
+
+  // Strategic performance indexes
+  @@index([status], name: "idx_orders_status")
+  @@index([customerId], name: "idx_orders_customer_id")
+  @@index([boutiqueId], name: "idx_orders_boutique_id")
+  @@index([assignedAssociateId], name: "idx_orders_assigned_associate_id")
+  @@index([assignedDeliveryId], name: "idx_orders_assigned_delivery_id")
+  @@index([status, createdAt], name: "idx_orders_status_created_at")
+  @@map("orders")
+}
+
+model MeasurementTelemetry {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId     String   @unique
+  chest       Float    @db.DoublePrecision // In inches
+  waist       Float    @db.DoublePrecision // In inches
+  hips        Float    @db.DoublePrecision // In inches
+  inseam      Float    @db.DoublePrecision // In inches
+  neck        Float    @db.DoublePrecision // In inches
+  shoulders   Float    @db.DoublePrecision // In inches
+  tailorNotes String?  @db.Text
+  recordedAt  DateTime @default(now()) @db.Timestamptz(6)
+
+  // One-to-one relation with the parent Order
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId], name: "idx_measurements_order_id")
+  @@map("measurement_telemetries")
+}
