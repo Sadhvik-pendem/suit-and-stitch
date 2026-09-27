@@ -1,3 +1,5 @@
+import dns from 'dns';
+dns.setDefaultResultOrder('ipv4first');
 import { PrismaClient, Role, OrderStatus } from '@prisma/client';
 import * as crypto from 'crypto';
 
