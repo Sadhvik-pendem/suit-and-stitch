@@ -266,26 +266,35 @@ export async function sendOtp(req: Request, res: Response, next: NextFunction): 
     const isGatewayConfigured = isEmail ? isSmtpConfigured : isSmsConfigured;
 
     // Dispatch real email or real SMS
+    let deliverySucceeded = false;
     if (isEmail) {
-      notificationService.sendLoginOtp(key, rawOtp).catch((err) => {
-        console.warn('[sendOtp] Real email transmission error:', err);
-      });
+      try {
+        deliverySucceeded = await notificationService.sendLoginOtp(key, rawOtp);
+      } catch (err) {
+        console.error('[sendOtp] Real email transmission error:', err);
+        deliverySucceeded = false;
+      }
     } else {
-      notificationService.sendLoginSms(key, rawOtp).catch((err) => {
-        console.warn('[sendOtp] Real SMS transmission error:', err);
-      });
+      try {
+        deliverySucceeded = await notificationService.sendLoginSms(key, rawOtp);
+      } catch (err) {
+        console.error('[sendOtp] Real SMS transmission error:', err);
+        deliverySucceeded = false;
+      }
     }
+
+    const showFallbackCode = !isGatewayConfigured || !deliverySucceeded;
 
     res.status(200).json({
       success: true,
-      message: isGatewayConfigured 
+      message: deliverySucceeded && isGatewayConfigured 
         ? `A 6-digit verification code has been dispatched to ${identifier}.`
-        : `Verification code generated. (Email/SMS gateway not yet active on server).`,
+        : `Verification code generated. (${isGatewayConfigured ? 'Email delivery error' : 'Email gateway not yet active on server'}).`,
       expiresInSeconds: 300,
       userExists: !!existingUser,
-      isGatewayConfigured,
+      isGatewayConfigured: isGatewayConfigured && deliverySucceeded,
       channel: isEmail ? 'email' : 'sms',
-      ...(!isGatewayConfigured && { demoCode: rawOtp }),
+      ...(showFallbackCode && { demoCode: rawOtp }),
     });
   } catch (error) {
     next(error);

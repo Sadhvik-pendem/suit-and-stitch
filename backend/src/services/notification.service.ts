@@ -24,16 +24,28 @@ class NotificationService {
   private initTransporter(): void {
     if (ENV.SMTP_HOST && ENV.SMTP_USER && ENV.SMTP_PASS) {
       try {
-        this.transporter = nodemailer.createTransport({
-          host: ENV.SMTP_HOST,
-          port: ENV.SMTP_PORT,
-          secure: ENV.SMTP_PORT === 465,
-          auth: {
-            user: ENV.SMTP_USER,
-            pass: ENV.SMTP_PASS,
-          },
-        });
-        console.log('[NotificationService] Connected to SMTP server:', ENV.SMTP_HOST);
+        const cleanPass = ENV.SMTP_PASS.replace(/\s+/g, '');
+        if (ENV.SMTP_HOST.includes('gmail') || (ENV.SMTP_USER && ENV.SMTP_USER.includes('@gmail.com'))) {
+          this.transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: ENV.SMTP_USER.trim(),
+              pass: cleanPass,
+            },
+          });
+          console.log('[NotificationService] Connected to Gmail SMTP service for:', ENV.SMTP_USER);
+        } else {
+          this.transporter = nodemailer.createTransport({
+            host: ENV.SMTP_HOST,
+            port: ENV.SMTP_PORT,
+            secure: ENV.SMTP_PORT === 465,
+            auth: {
+              user: ENV.SMTP_USER.trim(),
+              pass: cleanPass,
+            },
+          });
+          console.log('[NotificationService] Connected to SMTP server:', ENV.SMTP_HOST);
+        }
       } catch (err) {
         console.warn('[NotificationService] Failed to initialize SMTP transporter:', err);
         this.transporter = null;
@@ -230,20 +242,26 @@ class NotificationService {
    */
   private async deliverEmail(to: string, subject: string, html: string): Promise<boolean> {
     if (!this.transporter) {
-      // SMTP not configured - simulated delivery succeeded
+      console.log(`[NotificationService] SMTP not configured - simulated delivery for ${to}`);
       return true;
     }
 
+    // Gmail requires from address to match authenticated user
+    const fromAddress = (ENV.SMTP_USER && ENV.SMTP_USER.includes('@gmail.com'))
+      ? `"Suit & Stitch Atelier" <${ENV.SMTP_USER}>`
+      : `"Suit & Stitch Atelier" <${ENV.FROM_EMAIL || ENV.SMTP_USER}>`;
+
     try {
-      await this.transporter.sendMail({
-        from: `Suit & Stitch Atelier <${ENV.FROM_EMAIL}>`,
+      const info = await this.transporter.sendMail({
+        from: fromAddress,
         to,
         subject,
         html,
       });
+      console.log(`[NotificationService] Email delivered successfully to ${to}, MessageId: ${info.messageId}`);
       return true;
     } catch (err) {
-      console.warn('[NotificationService] Email delivery failure:', err);
+      console.error('[NotificationService] Email delivery failure:', err);
       return false;
     }
   }
