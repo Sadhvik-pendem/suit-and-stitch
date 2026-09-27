@@ -84,6 +84,46 @@
       .input-luxury:focus {
         border-color: #C5A880;
       }
+      .animate-fade-in {
+        animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Print Stylesheet for Workshop Physical Pattern Cards */
+    @media print {
+      body {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+        padding: 0 !important;
+      }
+      header, nav, button, .no-print, .btn-luxury-solid, .btn-luxury-outline, form {
+        display: none !important;
+      }
+      .card-luxury {
+        border: 1px solid #000000 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        margin-bottom: 20px !important;
+      }
+      .print-pattern-card {
+        display: block !important;
+        width: 100% !important;
+        background: #FFFFFF !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+        page-break-inside: avoid;
+      }
     }
   </style>
 </head>
@@ -130,8 +170,8 @@
         name: 'Darzi & Co. Haute Atelier',
         location: 'Jayanagar, Bengaluru',
         rating: 4.9,
-        description: 'Bespoke tailoring masters specializing in structured men’s suits, tuxedo silhouettes, and pure silk heritage gowns.',
-        banner: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=800',
+        description: 'Master bespoke tailors steeped in Savile Row craftsmanship, specializing in structured canvas suits, tuxedo silhouettes, and pure silk heritage gowns.',
+        banner: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=1600',
         catalog: [
           {
             id: 'dsg_101',
@@ -140,8 +180,8 @@
             price: 8500,
             fabricOptions: ['Italian Wool Blend', 'Raymond English Tweed', 'Egyptian Cotton Twill'],
             leadTimeDays: 10,
-            image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=600',
-            description: 'Handcrafted canvas chest piece with reinforced hand-stitched pick lapels.'
+            image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=900',
+            description: 'Handcrafted full-canvas chest piece with reinforced hand-stitched pick lapels and custom horn buttons.'
           },
           {
             id: 'dsg_102',
@@ -150,8 +190,8 @@
             price: 5200,
             fabricOptions: ['Mulberry Silk', 'Pure Katan Silk', 'Silk Satin Sheen'],
             leadTimeDays: 7,
-            image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600',
-            description: 'Modern relaxed draped neckline crafted over fine Banarasi zari borders.'
+            image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=900',
+            description: 'Modern relaxed draped cowl neckline hand-cut over pure Banarasi gold zari floral borders.'
           }
         ]
       },
@@ -160,8 +200,8 @@
         name: 'Priya Studio Luxe',
         location: 'Connaught Place, New Delhi',
         rating: 4.8,
-        description: 'Luxury bridal and bespoke party silhouettes cut with architectural precision and handmade zardozi detailing.',
-        banner: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=800',
+        description: 'Luxury bespoke couture studio pairing architectural drape precision with heritage handcrafted zardozi and raw silk texturing.',
+        banner: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=1600',
         catalog: [
           {
             id: 'dsg_201',
@@ -170,8 +210,18 @@
             price: 7800,
             fabricOptions: ['Royal Emerald Velvet', 'Midnight Silk Velvet', 'Plush Black Micro-Velvet'],
             leadTimeDays: 8,
-            image: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=600',
-            description: 'Sculpted corsetry bodice with cascading bias flare tailored to your exact height.'
+            image: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=900',
+            description: 'Sculpted corsetry bodice with cascading bias-cut flare tailored to your exact height and posture metrics.'
+          },
+          {
+            id: 'dsg_202',
+            name: 'Ivory Raw Silk Bandhgala Tuxedo',
+            category: 'Ethnic Couture',
+            price: 9200,
+            fabricOptions: ['Varanasi Raw Silk', 'Matka Silk Weave', 'Brocade Jacquard'],
+            leadTimeDays: 12,
+            image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=900',
+            description: 'Structured high-mandarin collar silhouette detailed with hand-cast antiqued brass crest buttons.'
           }
         ]
       }
@@ -202,13 +252,69 @@
       }
     ];
 
+    function Toast({ toast, onClose }) {
+      if (!toast || !toast.message) return null;
+      const isSuccess = toast.type === 'success';
+      const isError = toast.type === 'error';
+      const isInfo = toast.type === 'info';
+      return (
+        <div className="fixed bottom-6 right-6 z-50 animate-fade-in max-w-sm w-full bg-[#121212] text-[#FAF8F5] border-l-4 border-[#C5A880] p-4 shadow-2xl rounded-sm flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <span className="text-[#C5A880] text-sm mt-0.5">
+              {isSuccess ? '✦' : isError ? '✕' : 'ℹ'}
+            </span>
+            <div>
+              <span className="text-[10px] uppercase font-mono tracking-widest text-[#C5A880] block">
+                {isSuccess ? 'System Confirmed' : isError ? 'System Notice' : 'Information'}
+              </span>
+              <p className="text-xs text-neutral-200 mt-1 leading-relaxed font-light">{toast.message}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-neutral-400 hover:text-white text-xs ml-2 cursor-pointer">✕</button>
+        </div>
+      );
+    }
+
     function App() {
-      const [currentUser, setCurrentUser] = useState(null);
+      const [currentUser, setCurrentUser] = useState(() => {
+        try {
+          const saved = localStorage.getItem('suit_stitch_auth_user');
+          return saved ? JSON.parse(saved) : null;
+        } catch (e) {
+          return null;
+        }
+      });
       const [activeTab, setActiveTab] = useState('browse');
       const [orders, setOrders] = useState(INITIAL_ORDERS);
       const [boutiques, setBoutiques] = useState(BOUTIQUES_MOCK);
       const [selectedBoutique, setSelectedBoutique] = useState(null);
       const [bookingModalItem, setBookingModalItem] = useState(null);
+      const [toast, setToast] = useState(null);
+
+      const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+      };
+
+      React.useEffect(() => {
+        if (!toast) return;
+        const timer = setTimeout(() => setToast(null), 4000);
+        return () => clearTimeout(timer);
+      }, [toast]);
+
+      const handleLoginSuccess = (user) => {
+        setCurrentUser(user);
+        if (user) {
+          localStorage.setItem('suit_stitch_auth_user', JSON.stringify(user));
+        }
+        showToast(`Welcome back, ${user.name}!`);
+      };
+
+      const handleLogout = () => {
+        setCurrentUser(null);
+        setSelectedBoutique(null);
+        localStorage.removeItem('suit_stitch_auth_user');
+        showToast('Signed out of atelier session.', 'info');
+      };
 
       // 1. Fetch live boutiques & garment catalog from PostgreSQL
       React.useEffect(() => {
@@ -282,6 +388,7 @@
             }
             return [payload.order, ...prev];
           });
+          showToast(`Order #${payload.orderId} updated: ${payload.status.replace('_', ' ').toUpperCase()}`, 'info');
         });
 
         return () => socket.disconnect();
@@ -314,7 +421,7 @@
             setOrders(prev => [data.order, ...prev]);
             setBookingModalItem(null);
             setActiveTab('orders');
-            alert(`Fitting order ${data.order.id} saved to PostgreSQL database! Your doorstep OTP is: ${data.order.otp}`);
+            showToast(`Fitting order ${data.order.id} registered! Security OTP: ${data.order.otp}`, 'success');
             return;
           }
         } catch (err) {
@@ -348,6 +455,7 @@
         setOrders(prev => [newOrder, ...prev]);
         setBookingModalItem(null);
         setActiveTab('orders');
+        showToast(`Fitting order ${newOrder.id} booked! Doorstep OTP: ${generatedOtp}`, 'success');
       };
 
       const isDeliveryRole = currentUser?.role === 'delivery_partner' || currentUser?.role === 'delivery_agent';
@@ -390,8 +498,8 @@
                       </div>
                     )}
                     <button 
-                      onClick={() => { setCurrentUser(null); setSelectedBoutique(null); }}
-                      className="text-[11px] text-red-700 hover:underline uppercase tracking-wider font-semibold ml-2"
+                      onClick={handleLogout}
+                      className="text-[11px] text-red-700 hover:underline uppercase tracking-wider font-semibold ml-2 cursor-pointer"
                     >
                       Logout
                     </button>
@@ -405,7 +513,7 @@
 
           <main className="flex-grow max-w-7xl mx-auto w-full p-6 md:p-12">
             {!currentUser ? (
-              <LoginPortal onLoginSuccess={(user) => setCurrentUser(user)} />
+              <LoginPortal onLoginSuccess={handleLoginSuccess} showToast={showToast} />
             ) : (
               <>
                 {currentUser.role === 'customer' && activeTab === 'browse' && (
@@ -420,6 +528,7 @@
                 {currentUser.role === 'customer' && activeTab === 'orders' && (
                   <CustomerOrdersView 
                     orders={orders.filter(o => o.customerEmail === currentUser.email)} 
+                    onBrowse={() => { setActiveTab('browse'); setSelectedBoutique(null); }}
                   />
                 )}
 
@@ -429,6 +538,7 @@
                     updateOrderStatus={updateOrderStatus} 
                     associateUser={currentUser}
                     fetchOrders={fetchOrders}
+                    showToast={showToast}
                   />
                 )}
 
@@ -438,15 +548,17 @@
                     updateOrderStatus={updateOrderStatus}
                     currentUser={currentUser}
                     fetchOrders={fetchOrders}
+                    showToast={showToast}
                   />
                 )}
 
                 {isDeliveryRole && (
                   <DeliveryPartnerView 
                     orders={orders} 
-                    updateOrderStatus={updateOrderStatus}
+                    updateOrderStatus={updateOrderStatus} 
                     currentUser={currentUser}
                     fetchOrders={fetchOrders}
+                    showToast={showToast}
                   />
                 )}
               </>
@@ -462,6 +574,8 @@
             />
           )}
 
+          <Toast toast={toast} onClose={() => setToast(null)} />
+
           <footer className="border-t border-[#E8E4DA] bg-white py-8 text-center text-xs text-neutral-400 tracking-widest uppercase">
             © 2026 SUIT & STITCH BESPOKE NETWORK • HYPER-PERSONALIZED FIT PLATFORM
           </footer>
@@ -469,7 +583,7 @@
       );
     }
 
-    function LoginPortal({ onLoginSuccess }) {
+    function LoginPortal({ onLoginSuccess, showToast }) {
       const [mode, setMode] = useState('login'); // 'login' | 'register'
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
@@ -553,7 +667,7 @@
           const data = await res.json();
 
           if (res.ok && data.success) {
-            alert(`Account registered successfully as ${role.replace('_', ' ')}! Signing you in...`);
+            if (showToast) showToast(`Account registered as ${role.replace('_', ' ')}! Signing you in...`, 'success');
             onLoginSuccess({
               id: data.user.id,
               name: data.user.name,
@@ -604,20 +718,94 @@
       };
 
       return (
-        <div className="max-w-md mx-auto py-8">
-          <div className="card-luxury p-8 md:p-10">
-            <div className="text-center mb-6">
-              <span className="text-[10px] uppercase tracking-[0.25em] text-[#C5A880] block mb-2 font-semibold">
-                {mode === 'login' ? 'Portal Sign In' : 'New Account Registration'}
+        <div className="max-w-xl mx-auto py-6">
+          <div className="card-luxury p-8 md:p-10 shadow-lg">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <span className="text-[10px] uppercase tracking-[0.3em] text-[#C5A880] block mb-2 font-semibold">
+                Atelier Access Portal
               </span>
-              <h2 className="text-3xl font-serif-luxury font-normal text-neutral-900">
-                {mode === 'login' ? 'Welcome Back' : 'Create Atelier Account'}
+              <h2 className="text-3xl md:text-4xl font-serif-luxury font-normal text-neutral-900">
+                Enter Suit & Stitch
               </h2>
-              <p className="text-xs text-neutral-500 font-light mt-1">
-                {mode === 'login'
-                  ? 'Sign in to access your orders, visits, or production queue.'
-                  : 'Register a real account saved directly to PostgreSQL database.'}
+              <p className="text-xs text-neutral-500 font-light mt-2 max-w-md mx-auto leading-relaxed">
+                Experience end-to-end bespoke tailoring operations across all platform participants.
               </p>
+            </div>
+
+            {/* Prominent 1-Click Role Demo Login Panel */}
+            <div className="bg-[#FAF8F5] border border-[#E8E4DA] p-5 mb-8 rounded-sm">
+              <div className="flex items-center justify-between mb-3 border-b border-[#E8E4DA] pb-2">
+                <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[#C5A880] flex items-center gap-1.5">
+                  <span>✦</span> Instant 1-Click Role Demo
+                </span>
+                <span className="text-[9px] font-mono text-neutral-400 uppercase">Live Walkthrough</span>
+              </div>
+              <p className="text-[11px] text-neutral-500 font-light mb-3">
+                Click any role card below to instantly explore live dashboards with pre-seeded data:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button 
+                  type="button"
+                  onClick={() => quickLogin('customer@suitstitch.com')} 
+                  className="p-3 border border-[#E8E4DA] bg-white hover:border-[#C5A880] hover:shadow-sm transition-all text-left group flex items-start justify-between"
+                >
+                  <div>
+                    <span className="text-[9px] font-mono text-[#C5A880] uppercase tracking-wider block font-bold">1. Customer</span>
+                    <span className="font-semibold text-neutral-900 text-xs block group-hover:text-[#C5A880] transition-colors">Pooja Sharma</span>
+                    <span className="text-[10px] text-neutral-500">Catalog & Fit Tracking</span>
+                  </div>
+                  <span className="text-xs text-neutral-300 group-hover:text-[#C5A880] transition-colors">→</span>
+                </button>
+
+                <button 
+                  type="button"
+                  onClick={() => quickLogin('associate@suitstitch.com')} 
+                  className="p-3 border border-[#E8E4DA] bg-white hover:border-[#C5A880] hover:shadow-sm transition-all text-left group flex items-start justify-between"
+                >
+                  <div>
+                    <span className="text-[9px] font-mono text-[#C5A880] uppercase tracking-wider block font-bold">2. Associate Tailor</span>
+                    <span className="font-semibold text-neutral-900 text-xs block group-hover:text-[#C5A880] transition-colors">Ramesh Kumar</span>
+                    <span className="text-[10px] text-neutral-500">OTP & Biometric Sizing</span>
+                  </div>
+                  <span className="text-xs text-neutral-300 group-hover:text-[#C5A880] transition-colors">→</span>
+                </button>
+
+                <button 
+                  type="button"
+                  onClick={() => quickLogin('boutique@darzi.com')} 
+                  className="p-3 border border-[#E8E4DA] bg-white hover:border-[#C5A880] hover:shadow-sm transition-all text-left group flex items-start justify-between"
+                >
+                  <div>
+                    <span className="text-[9px] font-mono text-[#C5A880] uppercase tracking-wider block font-bold">3. Boutique Atelier</span>
+                    <span className="font-semibold text-neutral-900 text-xs block group-hover:text-[#C5A880] transition-colors">Darzi & Co. Studio</span>
+                    <span className="text-[10px] text-neutral-500">Cutting Queue & Pattern Cards</span>
+                  </div>
+                  <span className="text-xs text-neutral-300 group-hover:text-[#C5A880] transition-colors">→</span>
+                </button>
+
+                <button 
+                  type="button"
+                  onClick={() => quickLogin('delivery@suitstitch.com')} 
+                  className="p-3 border border-[#E8E4DA] bg-white hover:border-[#C5A880] hover:shadow-sm transition-all text-left group flex items-start justify-between"
+                >
+                  <div>
+                    <span className="text-[9px] font-mono text-[#C5A880] uppercase tracking-wider block font-bold">4. Delivery Fleet</span>
+                    <span className="font-semibold text-neutral-900 text-xs block group-hover:text-[#C5A880] transition-colors">Kiran Patel</span>
+                    <span className="text-[10px] text-neutral-500">Pickups & Handover Scans</span>
+                  </div>
+                  <span className="text-xs text-neutral-300 group-hover:text-[#C5A880] transition-colors">→</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Section Divider */}
+            <div className="relative flex py-3 items-center mb-6">
+              <div className="flex-grow border-t border-[#E8E4DA]"></div>
+              <span className="flex-shrink mx-4 text-[10px] uppercase font-mono tracking-widest text-neutral-400">
+                Or Sign In With Custom Account
+              </span>
+              <div className="flex-grow border-t border-[#E8E4DA]"></div>
             </div>
 
             {/* Mode Toggle Tabs */}
@@ -768,24 +956,6 @@
                 </button>
               </form>
             )}
-
-            <div className="border-t border-[#E8E4DA] mt-8 pt-6">
-              <span className="text-[10px] uppercase tracking-wider text-neutral-400 block mb-3 text-center">Demo 1-Click Role Login</span>
-              <div className="grid grid-cols-2 gap-2 text-[10px]">
-                <button onClick={() => quickLogin('customer@suitstitch.com')} className="p-2 border border-[#E8E4DA] bg-neutral-50 hover:bg-[#C5A880] hover:text-white transition-all text-left">
-                  <span className="font-bold block">1. Customer</span> Pooja (Buyer)
-                </button>
-                <button onClick={() => quickLogin('associate@suitstitch.com')} className="p-2 border border-[#E8E4DA] bg-neutral-50 hover:bg-[#C5A880] hover:text-white transition-all text-left">
-                  <span className="font-bold block">2. Associate</span> Ramesh (Field Agent)
-                </button>
-                <button onClick={() => quickLogin('boutique@darzi.com')} className="p-2 border border-[#E8E4DA] bg-neutral-50 hover:bg-[#C5A880] hover:text-white transition-all text-left">
-                  <span className="font-bold block">3. Boutique</span> Darzi Studio
-                </button>
-                <button onClick={() => quickLogin('delivery@suitstitch.com')} className="p-2 border border-[#E8E4DA] bg-neutral-50 hover:bg-[#C5A880] hover:text-white transition-all text-left">
-                  <span className="font-bold block">4. Delivery</span> Kiran (Logistics)
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       );
@@ -969,7 +1139,7 @@
       );
     }
 
-    function CustomerOrdersView({ orders }) {
+    function CustomerOrdersView({ orders, onBrowse }) {
       const steps = [
         { label: 'Booked', desc: 'Order Placed & Boutique Confirmed' },
         { label: 'Associate Arriving', desc: 'Associate Traveling for Fitting' },
@@ -986,15 +1156,31 @@
 
       if (orders.length === 0) {
         return (
-          <div className="card-luxury p-12 text-center max-w-lg mx-auto">
-            <h3 className="text-xl font-serif-luxury">No Active Orders</h3>
-            <p className="text-xs text-neutral-400 mt-2">Browse our studios and book your first fitting appointment.</p>
+          <div className="card-luxury p-12 md:p-16 text-center max-w-lg mx-auto space-y-5 animate-fade-in">
+            <div className="w-14 h-14 mx-auto rounded-full bg-[#FAF8F5] border border-[#E8E4DA] flex items-center justify-center text-xl text-[#C5A880]">
+              ✦
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-mono tracking-widest text-[#C5A880] block mb-1">Portfolio Status</span>
+              <h3 className="text-2xl md:text-3xl font-serif-luxury text-neutral-900">No Tailored Commissions Yet</h3>
+              <p className="text-xs text-neutral-500 font-light mt-2 leading-relaxed">
+                Explore our curated partner ateliers to commission your first bespoke wardrobe piece with doorstep biometric sizing.
+              </p>
+            </div>
+            {onBrowse && (
+              <button 
+                onClick={onBrowse} 
+                className="btn-luxury-solid !py-3 !px-6"
+              >
+                Explore Signature Boutiques
+              </button>
+            )}
           </div>
         );
       }
 
       return (
-        <div className="space-y-8">
+        <div className="space-y-8 animate-fade-in">
           <div className="border-b border-[#E8E4DA] pb-4">
             <span className="text-[10px] uppercase tracking-widest text-[#C5A880] block font-semibold">Active Orders</span>
             <h2 className="text-3xl font-serif-luxury">Live Order Pipeline</h2>
@@ -1004,26 +1190,28 @@
             {orders.map((o) => {
               const currentStepIdx = getStepIndex(o.status);
               return (
-                <div key={o.id} className="card-luxury p-8 md:p-10 space-y-8">
+                <div key={o.id} className="card-luxury p-6 md:p-10 space-y-8">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#E8E4DA] pb-6">
                     <div>
                       <span className="text-[10px] font-mono text-neutral-400 block uppercase">Reference: {o.id}</span>
-                      <h3 className="text-2xl font-serif-luxury mt-0.5">{o.designName}</h3>
+                      <h3 className="text-2xl md:text-3xl font-serif-luxury mt-0.5">{o.designName}</h3>
                       <span className="text-xs text-[#C5A880] font-medium">{o.boutiqueName}</span>
                     </div>
-                    <div className="text-right">
+                    <div className="text-left md:text-right">
                       <span className="text-2xl font-serif-luxury block">₹{o.price.toLocaleString('en-IN')}</span>
                       <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-mono">{o.selectedFabric}</span>
                     </div>
                   </div>
 
-                  <div className="relative py-4">
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-center">
+                  {/* Desktop Horizontal Stepped Track (md:block) */}
+                  <div className="hidden md:block relative py-4">
+                    <div className="grid grid-cols-6 gap-2 text-center relative">
+                      <div className="absolute top-4 left-[8%] right-[8%] h-0.5 bg-[#E8E4DA] -z-0"></div>
                       {steps.map((st, sIdx) => {
                         const isDone = sIdx <= currentStepIdx;
                         const isCurrent = sIdx === currentStepIdx;
                         return (
-                          <div key={sIdx} className="flex flex-col items-center">
+                          <div key={sIdx} className="flex flex-col items-center relative z-10">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono font-bold transition-all mb-2 ${
                               isCurrent 
                                 ? 'bg-[#C5A880] text-white ring-4 ring-[#FAF8F5] shadow' 
@@ -1031,12 +1219,46 @@
                                   ? 'bg-neutral-900 text-white' 
                                   : 'bg-white border border-[#E8E4DA] text-neutral-400'
                             }`}>
-                              {sIdx + 1}
+                              {isDone && !isCurrent ? '✓' : sIdx + 1}
                             </div>
                             <span className={`text-[10px] font-semibold uppercase tracking-wider ${isCurrent ? 'text-[#C5A880]' : isDone ? 'text-neutral-800' : 'text-neutral-400'}`}>
                               {st.label}
                             </span>
-                            <span className="text-[9px] text-neutral-400 hidden md:block mt-1 leading-tight">{st.desc}</span>
+                            <span className="text-[9px] text-neutral-400 mt-1 leading-tight px-1">{st.desc}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Mobile Vertical Stepped Timeline (md:hidden) */}
+                  <div className="md:hidden space-y-3 py-2">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-[#C5A880] block mb-2 font-semibold">
+                      Live Fitting Pipeline
+                    </span>
+                    <div className="relative pl-6 space-y-4 border-l-2 border-[#E8E4DA] ml-3">
+                      {steps.map((st, sIdx) => {
+                        const isDone = sIdx <= currentStepIdx;
+                        const isCurrent = sIdx === currentStepIdx;
+                        return (
+                          <div key={sIdx} className="relative flex items-start gap-3">
+                            <div className={`absolute -left-[31px] w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-mono font-bold transition-all ${
+                              isCurrent 
+                                ? 'bg-[#C5A880] text-white ring-2 ring-[#FAF8F5] shadow' 
+                                : isDone 
+                                  ? 'bg-neutral-900 text-white' 
+                                  : 'bg-white border border-[#E8E4DA] text-neutral-400'
+                            }`}>
+                              {isDone && !isCurrent ? '✓' : sIdx + 1}
+                            </div>
+                            <div className="pt-0.5">
+                              <span className={`text-[11px] font-semibold uppercase tracking-wider block ${isCurrent ? 'text-[#C5A880]' : isDone ? 'text-neutral-900' : 'text-neutral-400'}`}>
+                                {st.label}
+                              </span>
+                              <span className="text-[10px] text-neutral-400 leading-tight block mt-0.5">
+                                {st.desc}
+                              </span>
+                            </div>
                           </div>
                         );
                       })}
@@ -1089,7 +1311,7 @@
       );
     }
 
-    function AssociatePortalView({ orders, updateOrderStatus, associateUser, fetchOrders }) {
+    function AssociatePortalView({ orders, updateOrderStatus, associateUser, fetchOrders, showToast }) {
       const [selectedOrderId, setSelectedOrderId] = useState('');
       const [otpInput, setOtpInput] = useState('');
       const [isVerified, setIsVerified] = useState(false);
@@ -1106,6 +1328,10 @@
 
       const activeOrder = orders.find(o => o.id === selectedOrderId);
       const pendingAppointments = orders.filter(o => o.status === 'booked' || o.status === 'associate_arriving');
+
+      const notify = (msg, type = 'success') => {
+        if (showToast) showToast(msg, type);
+      };
 
       const handleVerifyOtp = async (e) => {
         e.preventDefault();
@@ -1128,11 +1354,11 @@
             setIsVerified(true);
             updateOrderStatus(selectedOrderId, 'associate_arriving');
             if (fetchOrders) fetchOrders();
-            alert('Doorstep OTP validated successfully! Biometric telemetry form unlocked.');
+            notify('Doorstep OTP validated successfully! Biometric telemetry form unlocked.', 'success');
             setLoading(false);
             return;
           } else {
-            alert(`OTP Verification Failed: ${data.message || 'Invalid 4-digit code.'}`);
+            notify(`OTP Verification Failed: ${data.message || 'Invalid 4-digit code.'}`, 'error');
             setLoading(false);
             return;
           }
@@ -1144,9 +1370,9 @@
         if (otpInput === activeOrder?.otp || otpInput === '1234') {
           setIsVerified(true);
           updateOrderStatus(selectedOrderId, 'associate_arriving');
-          alert('Doorstep OTP verified locally!');
+          notify('Doorstep OTP verified locally!', 'success');
         } else {
-          alert('Invalid Security OTP.');
+          notify('Invalid Security OTP.', 'error');
         }
         setLoading(false);
       };
@@ -1184,14 +1410,14 @@
               tailorNotes: notes
             });
             if (fetchOrders) fetchOrders();
-            alert(`Measurements for ${selectedOrderId} saved to Neon PostgreSQL & dispatched to atelier cutting queue!`);
+            notify(`Measurements for ${selectedOrderId} saved to Neon PostgreSQL & dispatched to atelier!`, 'success');
             setSelectedOrderId('');
             setIsVerified(false);
             setVerificationToken('');
             setLoading(false);
             return;
           } else {
-            alert(`Submission Error: ${data.message || 'Failed to submit measurements.'}`);
+            notify(`Submission Error: ${data.message || 'Failed to submit measurements.'}`, 'error');
             setLoading(false);
             return;
           }
@@ -1204,7 +1430,7 @@
           measurements: { chest, waist, hips, inseam, neck, shoulders },
           tailorNotes: notes
         });
-        alert('Measurements submitted to the Studio (local session)!');
+        notify('Measurements submitted to the Studio (local session)!', 'success');
         setSelectedOrderId('');
         setIsVerified(false);
         setVerificationToken('');
@@ -1212,11 +1438,11 @@
       };
 
       return (
-        <div className="max-w-2xl mx-auto card-luxury p-8 md:p-10 space-y-6">
+        <div className="max-w-2xl mx-auto card-luxury p-8 md:p-10 space-y-6 animate-fade-in">
           <div className="border-b border-[#E8E4DA] pb-4 flex justify-between items-baseline">
             <div>
               <span className="text-[10px] uppercase tracking-widest text-[#C5A880] block font-semibold">Associate Workspace</span>
-              <h2 className="text-2xl font-serif-luxury">Record Measurements</h2>
+              <h2 className="text-2xl md:text-3xl font-serif-luxury">Record Measurements</h2>
             </div>
             <span className="text-xs font-mono text-neutral-400">Agent: {associateUser.name}</span>
           </div>
@@ -1226,7 +1452,7 @@
               <span className="text-[10px] uppercase tracking-wider text-neutral-400 block font-semibold">Assigned Visits</span>
               {pendingAppointments.length > 0 ? (
                 pendingAppointments.map(a => (
-                  <div key={a.id} className="p-4 border border-[#E8E4DA] bg-neutral-50 flex justify-between items-center">
+                  <div key={a.id} className="p-4 border border-[#E8E4DA] bg-neutral-50 flex justify-between items-center hover:border-[#C5A880] transition-colors">
                     <div>
                       <span className="text-[9px] font-mono text-neutral-400">{a.id}</span>
                       <h4 className="font-semibold text-neutral-900">{a.customerName}</h4>
@@ -1242,17 +1468,25 @@
                   </div>
                 ))
               ) : (
-                <p className="text-neutral-400 text-xs italic py-6 text-center">No pending visits scheduled.</p>
+                <div className="border border-dashed border-[#E8E4DA] p-10 text-center space-y-3 bg-[#FAF8F5]/50">
+                  <div className="w-10 h-10 mx-auto rounded-full bg-white border border-[#E8E4DA] flex items-center justify-center text-[#C5A880]">
+                    ✦
+                  </div>
+                  <h4 className="font-serif-luxury text-lg text-neutral-800">No Doorstep Appointments Pending</h4>
+                  <p className="text-xs text-neutral-400 max-w-sm mx-auto">
+                    All scheduled client measurement sessions have been completed or are awaiting new booking dispatches.
+                  </p>
+                </div>
               )}
             </div>
           ) : (
             <div>
-              <button onClick={() => setSelectedOrderId('')} className="text-xs text-neutral-500 uppercase tracking-widest mb-6 block">
+              <button onClick={() => setSelectedOrderId('')} className="text-xs text-neutral-500 uppercase tracking-widest mb-6 block hover:text-black">
                 ← Back to List
               </button>
 
               <div className="bg-neutral-50 p-4 border border-[#E8E4DA] mb-6">
-                <span className="text-[9px] uppercase tracking-widest text-[#C5A880] block">Customer Appointment</span>
+                <span className="text-[9px] uppercase tracking-widest text-[#C5A880] block font-semibold">Customer Appointment</span>
                 <h4 className="text-lg font-semibold">{activeOrder.customerName}</h4>
                 <p className="text-xs text-neutral-500">{activeOrder.deliveryAddress} • {activeOrder.customerPhone}</p>
               </div>
@@ -1267,12 +1501,14 @@
                     maxLength={4} 
                     value={otpInput} 
                     onChange={(e) => setOtpInput(e.target.value)} 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     className="w-36 text-center text-3xl font-mono tracking-[0.3em] border-b-2 border-neutral-900 py-2 outline-none mx-auto block"
                     placeholder="0000" 
                     required 
                   />
-                  <button type="submit" className="btn-luxury-solid w-full mt-4">
-                    Verify & Unlock Form
+                  <button type="submit" disabled={loading} className="btn-luxury-solid w-full mt-4">
+                    {loading ? 'Verifying OTP...' : 'Verify & Unlock Form'}
                   </button>
                 </form>
               ) : (
@@ -1282,12 +1518,90 @@
                   </span>
 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div><label className="text-[10px] uppercase text-neutral-400 block mb-1">Chest</label><input type="number" step="0.1" value={chest} onChange={(e) => setChest(e.target.value)} className="input-luxury font-mono" placeholder="38.5" required /></div>
-                    <div><label className="text-[10px] uppercase text-neutral-400 block mb-1">Waist</label><input type="number" step="0.1" value={waist} onChange={(e) => setWaist(e.target.value)} className="input-luxury font-mono" placeholder="32.0" required /></div>
-                    <div><label className="text-[10px] uppercase text-neutral-400 block mb-1">Hips</label><input type="number" step="0.1" value={hips} onChange={(e) => setHips(e.target.value)} className="input-luxury font-mono" placeholder="40.0" required /></div>
-                    <div><label className="text-[10px] uppercase text-neutral-400 block mb-1">Inseam</label><input type="number" step="0.1" value={inseam} onChange={(e) => setInseam(e.target.value)} className="input-luxury font-mono" placeholder="31.0" required /></div>
-                    <div><label className="text-[10px] uppercase text-neutral-400 block mb-1">Neck</label><input type="number" step="0.1" value={neck} onChange={(e) => setNeck(e.target.value)} className="input-luxury font-mono" placeholder="15.5" required /></div>
-                    <div><label className="text-[10px] uppercase text-neutral-400 block mb-1">Shoulders</label><input type="number" step="0.1" value={shoulders} onChange={(e) => setShoulders(e.target.value)} className="input-luxury font-mono" placeholder="18.0" required /></div>
+                    <div>
+                      <label className="text-[10px] uppercase text-neutral-400 block mb-1">Chest</label>
+                      <input 
+                        type="number" 
+                        step="0.1" 
+                        inputMode="decimal"
+                        pattern="[0-9]*[.]?[0-9]*"
+                        value={chest} 
+                        onChange={(e) => setChest(e.target.value)} 
+                        className="input-luxury font-mono" 
+                        placeholder="38.5" 
+                        required 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase text-neutral-400 block mb-1">Waist</label>
+                      <input 
+                        type="number" 
+                        step="0.1" 
+                        inputMode="decimal"
+                        pattern="[0-9]*[.]?[0-9]*"
+                        value={waist} 
+                        onChange={(e) => setWaist(e.target.value)} 
+                        className="input-luxury font-mono" 
+                        placeholder="32.0" 
+                        required 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase text-neutral-400 block mb-1">Hips</label>
+                      <input 
+                        type="number" 
+                        step="0.1" 
+                        inputMode="decimal"
+                        pattern="[0-9]*[.]?[0-9]*"
+                        value={hips} 
+                        onChange={(e) => setHips(e.target.value)} 
+                        className="input-luxury font-mono" 
+                        placeholder="40.0" 
+                        required 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase text-neutral-400 block mb-1">Inseam</label>
+                      <input 
+                        type="number" 
+                        step="0.1" 
+                        inputMode="decimal"
+                        pattern="[0-9]*[.]?[0-9]*"
+                        value={inseam} 
+                        onChange={(e) => setInseam(e.target.value)} 
+                        className="input-luxury font-mono" 
+                        placeholder="31.0" 
+                        required 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase text-neutral-400 block mb-1">Neck</label>
+                      <input 
+                        type="number" 
+                        step="0.1" 
+                        inputMode="decimal"
+                        pattern="[0-9]*[.]?[0-9]*"
+                        value={neck} 
+                        onChange={(e) => setNeck(e.target.value)} 
+                        className="input-luxury font-mono" 
+                        placeholder="15.5" 
+                        required 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase text-neutral-400 block mb-1">Shoulders</label>
+                      <input 
+                        type="number" 
+                        step="0.1" 
+                        inputMode="decimal"
+                        pattern="[0-9]*[.]?[0-9]*"
+                        value={shoulders} 
+                        onChange={(e) => setShoulders(e.target.value)} 
+                        className="input-luxury font-mono" 
+                        placeholder="18.0" 
+                        required 
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -1305,8 +1619,8 @@
                     />
                   </div>
 
-                  <button type="submit" className="btn-luxury-solid w-full">
-                    Upload to Studio
+                  <button type="submit" disabled={loading} className="btn-luxury-solid w-full">
+                    {loading ? 'Transmitting Sizing Telemetry...' : 'Upload to Studio'}
                   </button>
                 </form>
               )}
@@ -1316,13 +1630,17 @@
       );
     }
 
-    function BoutiquePartnerView({ orders, updateOrderStatus, currentUser, fetchOrders }) {
+    function BoutiquePartnerView({ orders, updateOrderStatus, currentUser, fetchOrders, showToast }) {
       const [tab, setTab] = useState('production');
       const [loadingId, setLoadingId] = useState(null);
 
       const awaitingFitting = orders.filter(o => o.status === 'booked' || o.status === 'associate_arriving');
       const inProduction = orders.filter(o => o.status === 'measurements_taken' || o.status === 'in_production');
       const completed = orders.filter(o => o.status === 'dispatched' || o.status === 'delivered');
+
+      const notify = (msg, type = 'success') => {
+        if (showToast) showToast(msg, type);
+      };
 
       const handleStartStitching = async (orderId) => {
         setLoadingId(orderId);
@@ -1338,16 +1656,17 @@
           if (res.ok && data.success) {
             updateOrderStatus(orderId, 'in_production');
             if (fetchOrders) fetchOrders();
-            alert(`Order ${orderId} accepted into active production! Sizing verified and stitching started.`);
+            notify(`Order ${orderId} accepted into production! Stitching started.`, 'success');
             setLoadingId(null);
             return;
           } else {
-            alert(`Action Failed: ${data.message || 'Could not start stitching.'}`);
+            notify(`Action Failed: ${data.message || 'Could not start stitching.'}`, 'error');
           }
         } catch (err) {
           console.warn('API start stitching failed, applying local update:', err);
         }
         updateOrderStatus(orderId, 'in_production');
+        notify(`Order ${orderId} stitching started (local session).`, 'success');
         setLoadingId(null);
       };
 
@@ -1365,16 +1684,17 @@
           if (res.ok && data.success) {
             updateOrderStatus(orderId, 'dispatched');
             if (fetchOrders) fetchOrders();
-            alert(`Order ${orderId} marked stitched and ready! Real-time pickup notification broadcast to delivery network.`);
+            notify(`Order ${orderId} marked stitched! Delivery fleet notified.`, 'success');
             setLoadingId(null);
             return;
           } else {
-            alert(`Action Failed: ${data.message || 'Could not mark order ready.'}`);
+            notify(`Action Failed: ${data.message || 'Could not mark order ready.'}`, 'error');
           }
         } catch (err) {
           console.warn('API mark-ready failed, applying local update:', err);
         }
         updateOrderStatus(orderId, 'dispatched');
+        notify(`Order ${orderId} marked ready for pickup (local session).`, 'success');
         setLoadingId(null);
       };
 
@@ -1384,20 +1704,20 @@
       };
 
       return (
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#E8E4DA] pb-6 gap-4">
+        <div className="space-y-6 animate-fade-in">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#E8E4DA] pb-6 gap-4 no-print">
             <div>
               <span className="text-[10px] uppercase tracking-widest text-[#C5A880] block font-semibold">Studio Workshop Portal</span>
               <h2 className="text-3xl font-serif-luxury">Tailor Production Queue</h2>
             </div>
             <div className="flex border border-[#E8E4DA] text-xs">
-              <button onClick={() => setTab('awaiting')} className={`px-4 py-2 uppercase tracking-wider ${tab === 'awaiting' ? 'bg-neutral-900 text-white' : 'hover:bg-neutral-100'}`}>
+              <button onClick={() => setTab('awaiting')} className={`px-4 py-2 uppercase tracking-wider transition-all ${tab === 'awaiting' ? 'bg-neutral-900 text-white' : 'hover:bg-neutral-100'}`}>
                 Awaiting Telemetry ({awaitingFitting.length})
               </button>
-              <button onClick={() => setTab('production')} className={`px-4 py-2 uppercase tracking-wider ${tab === 'production' ? 'bg-neutral-900 text-white' : 'hover:bg-neutral-100'}`}>
+              <button onClick={() => setTab('production')} className={`px-4 py-2 uppercase tracking-wider transition-all ${tab === 'production' ? 'bg-neutral-900 text-white' : 'hover:bg-neutral-100'}`}>
                 Active Stitching ({inProduction.length})
               </button>
-              <button onClick={() => setTab('completed')} className={`px-4 py-2 uppercase tracking-wider ${tab === 'completed' ? 'bg-neutral-900 text-white' : 'hover:bg-neutral-100'}`}>
+              <button onClick={() => setTab('completed')} className={`px-4 py-2 uppercase tracking-wider transition-all ${tab === 'completed' ? 'bg-neutral-900 text-white' : 'hover:bg-neutral-100'}`}>
                 Dispatched ({completed.length})
               </button>
             </div>
@@ -1411,18 +1731,26 @@
                     <div className="flex-1 space-y-4">
                       <div className="flex justify-between items-baseline">
                         <span className="text-xs font-mono text-neutral-400">{o.id}</span>
-                        <button 
-                          onClick={() => handlePrintPatternCard(o.id)} 
-                          className="text-[10px] uppercase tracking-widest text-[#C5A880] border border-[#C5A880] px-3 py-1 hover:bg-[#C5A880] hover:text-white transition-all flex items-center gap-1.5"
-                        >
-                          <span>🖨</span> Download Pattern Card (PDF)
-                        </button>
+                        <div className="flex items-center gap-2 no-print">
+                          <button 
+                            onClick={() => window.print()} 
+                            className="text-[10px] uppercase tracking-widest text-neutral-700 border border-[#E8E4DA] px-3 py-1 hover:border-black transition-all flex items-center gap-1.5"
+                          >
+                            <span>🖨</span> Print Ticket
+                          </button>
+                          <button 
+                            onClick={() => handlePrintPatternCard(o.id)} 
+                            className="text-[10px] uppercase tracking-widest text-[#C5A880] border border-[#C5A880] px-3 py-1 hover:bg-[#C5A880] hover:text-white transition-all flex items-center gap-1.5"
+                          >
+                            <span>📄</span> PDF Card
+                          </button>
+                        </div>
                       </div>
                       <h4 className="text-2xl font-serif-luxury">{o.designName}</h4>
                       <p className="text-xs text-neutral-600">Client: <strong>{o.customerName}</strong> ({o.deliveryAddress})</p>
                       <p className="text-xs text-neutral-600">Fabric: <strong>{o.selectedFabric}</strong></p>
 
-                      <div className="pt-4">
+                      <div className="pt-4 no-print">
                         {o.status === 'measurements_taken' ? (
                           <button 
                             onClick={() => handleStartStitching(o.id)} 
@@ -1443,9 +1771,12 @@
                       </div>
                     </div>
 
-                    <div className="lg:max-w-md w-full bg-[#FAF8F5] border border-[#E8E4DA] p-6 font-mono text-xs">
-                      <span className="text-[9px] uppercase tracking-widest text-neutral-400 block font-sans">Measurement Ticket</span>
-                      <h5 className="font-bold text-sm tracking-wider mt-1 border-b border-dashed border-[#E8E4DA] pb-2">BODY SIZES</h5>
+                    <div className="print-pattern-card lg:max-w-md w-full bg-[#FAF8F5] border border-[#E8E4DA] p-6 font-mono text-xs">
+                      <div className="flex justify-between items-baseline border-b border-dashed border-[#E8E4DA] pb-2">
+                        <span className="text-[9px] uppercase tracking-widest text-neutral-400 font-sans">Physical Pattern Ticket</span>
+                        <span className="text-[9px] font-mono text-[#C5A880] font-bold">{o.id}</span>
+                      </div>
+                      <h5 className="font-bold text-sm tracking-wider mt-2">BODY MEASUREMENTS (INCHES)</h5>
                       {o.measurements ? (
                         <div className="grid grid-cols-2 gap-3 my-3">
                           <div className="flex justify-between border-b border-[#E8E4DA] pb-1"><span>CHEST:</span> <strong>{o.measurements.chest}"</strong></div>
@@ -1458,59 +1789,99 @@
                       ) : (
                         <p className="text-[10px] text-neutral-400 italic my-3">Pending associate visit & measurements.</p>
                       )}
-                      <p className="text-[10px] text-neutral-500 font-sans mt-3">Notes: {o.tailorNotes || 'Standard fit.'}</p>
+                      <p className="text-[10px] text-neutral-500 font-sans mt-3">Notes: {o.tailorNotes || 'Standard bespoke drape.'}</p>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-neutral-400 text-xs italic py-10 text-center">No orders currently on the cutting table.</p>
+                <div className="card-luxury p-12 text-center space-y-3">
+                  <div className="w-10 h-10 mx-auto rounded-full bg-[#FAF8F5] border border-[#E8E4DA] flex items-center justify-center text-[#C5A880]">
+                    ✦
+                  </div>
+                  <h4 className="font-serif-luxury text-xl text-neutral-900">Cutting Queue Clear</h4>
+                  <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed">
+                    No garments are currently on the cutting table. Accepted customer dimensions will appear here automatically.
+                  </p>
+                </div>
               )}
             </div>
           )}
 
           {tab === 'awaiting' && (
-            <div className="grid md:grid-cols-2 gap-6">
-              {awaitingFitting.map(o => (
-                <div key={o.id} className="card-luxury p-6 space-y-2">
-                  <span className="text-[10px] font-mono text-neutral-400">{o.id}</span>
-                  <h4 className="text-lg font-serif-luxury">{o.designName}</h4>
-                  <p className="text-xs text-neutral-500">Visit scheduled for {o.appointmentSlot} by {o.associate ? o.associate.name : 'Field Associate'}.</p>
+            <div>
+              {awaitingFitting.length > 0 ? (
+                <div className="grid md:grid-cols-2 gap-6">
+                  {awaitingFitting.map(o => (
+                    <div key={o.id} className="card-luxury p-6 space-y-2">
+                      <span className="text-[10px] font-mono text-neutral-400">{o.id}</span>
+                      <h4 className="text-lg font-serif-luxury">{o.designName}</h4>
+                      <p className="text-xs text-neutral-500">Visit scheduled for {o.appointmentSlot} by {o.associate ? o.associate.name : 'Field Associate'}.</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="card-luxury p-12 text-center space-y-3">
+                  <div className="w-10 h-10 mx-auto rounded-full bg-[#FAF8F5] border border-[#E8E4DA] flex items-center justify-center text-[#C5A880]">
+                    ✦
+                  </div>
+                  <h4 className="font-serif-luxury text-xl text-neutral-900">No Orders Awaiting Fitting</h4>
+                  <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed">
+                    All client commissions have either completed doorstep sizing or have transitioned to the cutting queue.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
           {tab === 'completed' && (
-            <div className="card-luxury p-6 overflow-x-auto text-xs">
-              <table className="w-full text-left font-light">
-                <thead>
-                  <tr className="border-b border-[#E8E4DA] text-neutral-400 text-[10px] uppercase font-mono">
-                    <th className="pb-3">Reference</th>
-                    <th className="pb-3">Customer</th>
-                    <th className="pb-3">Garment</th>
-                    <th className="pb-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E8E4DA]">
-                  {completed.map(o => (
-                    <tr key={o.id}>
-                      <td className="py-3 font-mono">{o.id}</td>
-                      <td className="py-3 font-semibold">{o.customerName}</td>
-                      <td className="py-3">{o.designName}</td>
-                      <td className="py-3 uppercase font-mono text-[10px]">{o.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div>
+              {completed.length > 0 ? (
+                <div className="card-luxury p-6 overflow-x-auto text-xs">
+                  <table className="w-full text-left font-light">
+                    <thead>
+                      <tr className="border-b border-[#E8E4DA] text-neutral-400 text-[10px] uppercase font-mono">
+                        <th className="pb-3">Reference</th>
+                        <th className="pb-3">Customer</th>
+                        <th className="pb-3">Garment</th>
+                        <th className="pb-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E8E4DA]">
+                      {completed.map(o => (
+                        <tr key={o.id}>
+                          <td className="py-3 font-mono">{o.id}</td>
+                          <td className="py-3 font-semibold">{o.customerName}</td>
+                          <td className="py-3">{o.designName}</td>
+                          <td className="py-3 uppercase font-mono text-[10px]">{o.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="card-luxury p-12 text-center space-y-3">
+                  <div className="w-10 h-10 mx-auto rounded-full bg-[#FAF8F5] border border-[#E8E4DA] flex items-center justify-center text-[#C5A880]">
+                    ✦
+                  </div>
+                  <h4 className="font-serif-luxury text-xl text-neutral-900">No Dispatched Garments Yet</h4>
+                  <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed">
+                    Commissions marked ready for delivery and completed client handovers will be cataloged in this log.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
       );
     }
 
-    function DeliveryPartnerView({ orders, updateOrderStatus, currentUser, fetchOrders }) {
+    function DeliveryPartnerView({ orders, updateOrderStatus, currentUser, fetchOrders, showToast }) {
       const [loadingId, setLoadingId] = useState(null);
       const activeShipments = orders.filter(o => o.status === 'dispatched' || o.status === 'in_production');
+
+      const notify = (msg, type = 'success') => {
+        if (showToast) showToast(msg, type);
+      };
 
       const handlePickup = async (orderId) => {
         setLoadingId(orderId);
@@ -1526,16 +1897,17 @@
           if (res.ok && data.success) {
             updateOrderStatus(orderId, 'dispatched');
             if (fetchOrders) fetchOrders();
-            alert(`Studio pickup scanned & confirmed for parcel ${orderId}! Status updated to Dispatched.`);
+            notify(`Studio pickup scanned & confirmed for parcel ${orderId}!`, 'success');
             setLoadingId(null);
             return;
           } else {
-            alert(`Pickup failed: ${data.message || 'Could not confirm pickup.'}`);
+            notify(`Pickup failed: ${data.message || 'Could not confirm pickup.'}`, 'error');
           }
         } catch (err) {
           console.warn('API pickup failed, applying local update:', err);
         }
         updateOrderStatus(orderId, 'dispatched');
+        notify(`Parcel ${orderId} marked picked up (local session).`, 'success');
         setLoadingId(null);
       };
 
@@ -1553,30 +1925,31 @@
           if (res.ok && data.success) {
             updateOrderStatus(orderId, 'delivered');
             if (fetchOrders) fetchOrders();
-            alert(`Doorstep handover confirmed for parcel ${orderId}! Garment delivered to client.`);
+            notify(`Doorstep handover confirmed for parcel ${orderId}!`, 'success');
             setLoadingId(null);
             return;
           } else {
-            alert(`Delivery confirmation failed: ${data.message || 'Could not confirm handover.'}`);
+            notify(`Delivery confirmation failed: ${data.message || 'Could not confirm handover.'}`, 'error');
           }
         } catch (err) {
           console.warn('API delivery failed, applying local update:', err);
         }
         updateOrderStatus(orderId, 'delivered');
+        notify(`Parcel ${orderId} delivered to client (local session).`, 'success');
         setLoadingId(null);
       };
 
       return (
-        <div className="max-w-2xl mx-auto card-luxury p-8 md:p-10 space-y-6">
+        <div className="max-w-2xl mx-auto card-luxury p-8 md:p-10 space-y-6 animate-fade-in">
           <div className="border-b border-[#E8E4DA] pb-4">
             <span className="text-[10px] uppercase tracking-widest text-[#C5A880] block font-semibold">Logistics Portal</span>
-            <h2 className="text-2xl font-serif-luxury">Active Deliveries</h2>
+            <h2 className="text-2xl md:text-3xl font-serif-luxury">Active Deliveries</h2>
           </div>
 
           <div className="space-y-4">
             {activeShipments.length > 0 ? (
               activeShipments.map(o => (
-                <div key={o.id} className="p-6 border border-[#E8E4DA] bg-neutral-50 space-y-3">
+                <div key={o.id} className="p-6 border border-[#E8E4DA] bg-neutral-50 space-y-3 hover:border-[#C5A880] transition-colors">
                   <div className="flex justify-between items-baseline">
                     <span className="text-xs font-mono font-bold text-neutral-900">{o.id}</span>
                     <span className="text-[9px] uppercase tracking-widest bg-neutral-200 px-2 py-0.5 font-semibold">
@@ -1618,7 +1991,15 @@
                 </div>
               ))
             ) : (
-              <p className="text-neutral-400 text-xs italic py-8 text-center">No parcels scheduled for delivery pickup.</p>
+              <div className="border border-dashed border-[#E8E4DA] p-10 text-center space-y-3 bg-[#FAF8F5]/50">
+                <div className="w-10 h-10 mx-auto rounded-full bg-white border border-[#E8E4DA] flex items-center justify-center text-[#C5A880]">
+                  ✦
+                </div>
+                <h4 className="font-serif-luxury text-lg text-neutral-800">Logistics Transit Clear</h4>
+                <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed">
+                  No parcels currently scheduled for atelier collection or customer delivery.
+                </p>
+              </div>
             )}
           </div>
         </div>

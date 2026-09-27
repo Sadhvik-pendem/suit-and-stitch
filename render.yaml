@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: cd backend && npm install && npm run build:prod
+    buildCommand: cd backend && npm install --include=dev && npm run build:prod
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
