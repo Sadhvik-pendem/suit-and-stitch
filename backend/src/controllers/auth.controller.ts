@@ -5,6 +5,7 @@ import { Role } from '@prisma/client';
 import prisma from '../config/prisma';
 import { signToken } from '../utils/jwt.util';
 import { ENV } from '../config/env';
+import notificationService from '../services/notification.service';
 
 /**
  * Standard utility to verify legacy/seed hash as well as standard bcrypt hashes
@@ -258,6 +259,13 @@ export async function sendOtp(req: Request, res: Response, next: NextFunction): 
     const existingUser = isEmail
       ? await prisma.user.findUnique({ where: { email: key } })
       : await prisma.user.findFirst({ where: { phone: key } });
+
+    // If identifier is an email, attempt real email transmission via SMTP (if configured)
+    if (isEmail) {
+      notificationService.sendLoginOtp(key, rawOtp).catch((err) => {
+        console.warn('[sendOtp] Real email transmission error:', err);
+      });
+    }
 
     res.status(200).json({
       success: true,

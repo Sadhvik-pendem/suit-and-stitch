@@ -141,6 +141,38 @@ class NotificationService {
   }
 
   /**
+   * 4. Send Login / Authentication 6-Digit OTP Email
+   */
+  async sendLoginOtp(email: string, otp: string): Promise<boolean> {
+    const subject = `Your Suit & Stitch Atelier Verification Code: ${otp}`;
+    const html = `
+      <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 550px; margin: 0 auto; background: #FAF8F5; padding: 32px; border: 1px solid #E8E4DA; color: #121212;">
+        <div style="border-bottom: 2px solid #C5A880; padding-bottom: 16px; margin-bottom: 24px; text-align: center;">
+          <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: #C5A880; font-weight: bold;">Suit & Stitch Collective</span>
+          <h1 style="font-family: Georgia, serif; font-size: 24px; margin: 8px 0 0 0; font-weight: normal;">Account Verification Code</h1>
+        </div>
+
+        <p style="font-size: 14px; line-height: 1.6; color: #4A4A4A; text-align: center;">
+          Here is your 6-digit one-time verification code to sign into your bespoke tailoring client portal:
+        </p>
+
+        <div style="background: #FFFFFF; border: 1px solid #E8E4DA; border-left: 4px solid #C5A880; padding: 24px; margin: 24px 0; text-align: center;">
+          <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #737373; display: block; margin-bottom: 8px;">6-Digit One-Time Password</span>
+          <span style="font-family: monospace; font-size: 40px; font-weight: bold; letter-spacing: 10px; color: #121212; display: block;">${otp}</span>
+          <span style="font-size: 11px; color: #A3A3A3; display: block; margin-top: 10px;">Valid for 5 minutes. Do not share this code with anyone.</span>
+        </div>
+
+        <p style="font-size: 12px; color: #737373; line-height: 1.5; text-align: center; border-top: 1px solid #E8E4DA; padding-top: 16px;">
+          If you did not request this verification code, you can safely ignore this email.
+        </p>
+      </div>
+    `;
+
+    console.log(`[Notification] Login OTP ${otp} dispatched to ${email}`);
+    return this.deliverEmail(email, subject, html);
+  }
+
+  /**
    * Internal email delivery method
    */
   private async deliverEmail(to: string, subject: string, html: string): Promise<boolean> {

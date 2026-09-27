@@ -1501,17 +1501,27 @@
                       Verification code sent to: <strong className="text-neutral-900">{identifier}</strong>
                     </span>
 
-                    {/* Convenient Demo Fill pill for testing */}
+                    {/* Prominent Instant Test Code Card */}
                     {demoCode && (
-                      <div className="mt-3 inline-flex items-center gap-2 bg-[#FAF8F5] border border-[#C5A880] px-3 py-1.5 rounded-sm">
-                        <span className="text-[10px] font-mono text-[#C5A880] uppercase tracking-wider font-semibold">Test Code: {demoCode}</span>
-                        <button 
-                          type="button" 
-                          onClick={() => setOtpCode(demoCode)}
-                          className="text-[10px] underline font-semibold text-neutral-800 hover:text-[#C5A880]"
-                        >
-                          Auto-fill
-                        </button>
+                      <div className="mt-4 p-4 bg-[#FAF8F5] border border-[#C5A880] rounded-sm text-center shadow-sm">
+                        <span className="text-[10px] uppercase font-mono tracking-widest text-[#C5A880] font-bold block mb-1">
+                          ✦ Instant Verification Code
+                        </span>
+                        <div className="flex items-center justify-center gap-3 my-2">
+                          <span className="text-xl font-mono font-bold tracking-[0.25em] text-neutral-900 bg-white border border-[#E8E4DA] px-4 py-1.5 rounded-sm shadow-inner">
+                            {demoCode}
+                          </span>
+                          <button 
+                            type="button" 
+                            onClick={() => setOtpCode(demoCode)}
+                            className="text-xs bg-neutral-900 text-white hover:bg-[#C5A880] hover:text-black transition-colors px-3 py-2 font-semibold rounded-sm focus-luxury"
+                          >
+                            Auto-fill Code
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-neutral-500 font-light mt-1">
+                          Click <strong>Auto-fill Code</strong> or type the digits into the box below.
+                        </p>
                       </div>
                     )}
                   </div>
