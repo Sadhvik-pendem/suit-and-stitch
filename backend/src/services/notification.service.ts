@@ -32,6 +32,9 @@ class NotificationService {
               user: ENV.SMTP_USER.trim(),
               pass: cleanPass,
             },
+            connectionTimeout: 6000,
+            greetingTimeout: 6000,
+            socketTimeout: 6000,
           });
           console.log('[NotificationService] Connected to Gmail SMTP service for:', ENV.SMTP_USER);
         } else {
@@ -43,6 +46,9 @@ class NotificationService {
               user: ENV.SMTP_USER.trim(),
               pass: cleanPass,
             },
+            connectionTimeout: 6000,
+            greetingTimeout: 6000,
+            socketTimeout: 6000,
           });
           console.log('[NotificationService] Connected to SMTP server:', ENV.SMTP_HOST);
         }
@@ -241,9 +247,60 @@ class NotificationService {
    * Internal email delivery method
    */
   private async deliverEmail(to: string, subject: string, html: string): Promise<boolean> {
+    // 1. Try Resend HTTP API (Port 443 HTTPS - Bypasses Render SMTP port blocking)
+    if (ENV.RESEND_API_KEY) {
+      try {
+        const from = ENV.FROM_EMAIL || 'onboarding@resend.dev';
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${ENV.RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: `Suit & Stitch Atelier <${from}>`,
+            to: [to],
+            subject,
+            html,
+          }),
+        });
+        const data = await res.json() as any;
+        console.log('[NotificationService] Resend API response:', data);
+        if (res.ok && data?.id) return true;
+      } catch (err) {
+        console.warn('[NotificationService] Resend API error:', err);
+      }
+    }
+
+    // 2. Try Brevo HTTP API (Port 443 HTTPS - Bypasses Render SMTP port blocking)
+    if (ENV.BREVO_API_KEY) {
+      try {
+        const fromEmail = ENV.SMTP_USER || ENV.FROM_EMAIL || 'concierge@suitstitch.com';
+        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': ENV.BREVO_API_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: { name: 'Suit & Stitch Atelier', email: fromEmail },
+            to: [{ email: to }],
+            subject,
+            htmlContent: html,
+          }),
+        });
+        const data = await res.json() as any;
+        console.log('[NotificationService] Brevo API response:', data);
+        if (res.ok && data?.messageId) return true;
+      } catch (err) {
+        console.warn('[NotificationService] Brevo API error:', err);
+      }
+    }
+
+    // 3. Fallback to standard SMTP (May time out if Render blocks port 587/465)
     if (!this.transporter) {
       console.log(`[NotificationService] SMTP not configured - simulated delivery for ${to}`);
-      return true;
+      return false;
     }
 
     // Gmail requires from address to match authenticated user
@@ -260,8 +317,12 @@ class NotificationService {
       });
       console.log(`[NotificationService] Email delivered successfully to ${to}, MessageId: ${info.messageId}`);
       return true;
-    } catch (err) {
-      console.error('[NotificationService] Email delivery failure:', err);
+    } catch (err: any) {
+      if (err?.code === 'ETIMEDOUT') {
+        console.error('[NotificationService] Outbound SMTP connection blocked by Render firewall (ETIMEDOUT on port 587/465). Use RESEND_API_KEY or BREVO_API_KEY over HTTPS port 443 instead.');
+      } else {
+        console.error('[NotificationService] Email delivery failure:', err);
+      }
       return false;
     }
   }
