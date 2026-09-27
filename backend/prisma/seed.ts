@@ -86,9 +86,9 @@ async function main() {
       location: 'Jayanagar, Bengaluru',
       rating: 4.9,
       description:
-        'Bespoke tailoring masters specializing in structured men’s suits, tuxedo silhouettes, and pure silk heritage gowns.',
+        'Master bespoke tailors steeped in Savile Row craftsmanship, specializing in structured canvas suits, tuxedo silhouettes, and pure silk heritage gowns.',
       bannerUrl:
-        'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=1600',
       userId: boutiqueUser1.id,
     },
   });
@@ -99,9 +99,9 @@ async function main() {
       location: 'Connaught Place, New Delhi',
       rating: 4.8,
       description:
-        'Luxury bridal and bespoke party silhouettes cut with architectural precision and handmade zardozi detailing.',
+        'Luxury bespoke couture studio pairing architectural drape precision with heritage handcrafted zardozi and raw silk texturing.',
       bannerUrl:
-        'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=1600',
       userId: boutiqueUser2.id,
     },
   });
@@ -117,9 +117,9 @@ async function main() {
       price: 8500,
       leadTimeDays: 10,
       imageUrl:
-        'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=600',
+        'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=900',
       description:
-        'Handcrafted canvas chest piece with reinforced hand-stitched pick lapels.',
+        'Handcrafted full-canvas chest piece with reinforced hand-stitched pick lapels and custom horn buttons.',
       fabrics: [
         'Italian Wool Blend',
         'Raymond English Tweed',
@@ -136,9 +136,9 @@ async function main() {
       price: 5200,
       leadTimeDays: 7,
       imageUrl:
-        'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=600',
+        'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=900',
       description:
-        'Modern relaxed draped neckline crafted over fine Banarasi zari borders.',
+        'Modern relaxed draped cowl neckline hand-cut over pure Banarasi gold zari floral borders.',
       fabrics: ['Mulberry Silk', 'Pure Katan Silk', 'Silk Satin Sheen'],
     },
   });
@@ -151,9 +151,9 @@ async function main() {
       price: 7800,
       leadTimeDays: 8,
       imageUrl:
-        'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=600',
+        'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=80&w=900',
       description:
-        'Sculpted corsetry bodice with cascading bias flare tailored to your exact height.',
+        'Sculpted corsetry bodice with cascading bias-cut flare tailored to your exact height and posture metrics.',
       fabrics: [
         'Royal Emerald Velvet',
         'Midnight Silk Velvet',
@@ -162,7 +162,22 @@ async function main() {
     },
   });
 
-  console.log('✓ Created 3 signature bespoke garment catalogs.');
+  const bandhgalaDesign = await prisma.garmentDesign.create({
+    data: {
+      boutiqueId: boutique2.id,
+      name: 'Ivory Raw Silk Bandhgala Tuxedo',
+      category: 'Ethnic Couture',
+      price: 9200,
+      leadTimeDays: 12,
+      imageUrl:
+        'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=900',
+      description:
+        'Structured high-mandarin collar silhouette detailed with hand-cast antiqued brass crest buttons.',
+      fabrics: ['Varanasi Raw Silk', 'Matka Silk Weave', 'Brocade Jacquard'],
+    },
+  });
+
+  console.log('✓ Created 4 signature bespoke garment catalogs across both ateliers.');
 
   // 5. Create Active Seed Order matching frontend INITIAL_ORDERS
   // Demo OTP is '4829'
@@ -189,7 +204,21 @@ async function main() {
   console.log('--- Database Seeding Completed Successfully ---');
 }
 
-main()
+async function runWithRetry(maxRetries = 4) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await main();
+      return;
+    } catch (e: any) {
+      console.warn(`[Seed] Attempt ${attempt} failed: ${e.message || e}`);
+      if (attempt === maxRetries) throw e;
+      console.log(`[Seed] Retrying in 2 seconds (attempt ${attempt + 1}/${maxRetries})...`);
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+  }
+}
+
+runWithRetry()
   .catch((e) => {
     console.error('Seeding failed:', e);
     process.exit(1);

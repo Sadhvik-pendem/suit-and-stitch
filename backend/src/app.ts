@@ -21,6 +21,16 @@ export function createApp(): Application {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 
+  // Top-level Health check for monitoring and cloud deployment probes
+  app.get('/health', (req, res) => {
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      service: 'Suit & Stitch Bespoke API',
+      database: 'connected',
+    });
+  });
+
   // Mount API Gateway routes under /api
   app.use('/api', routes);
 

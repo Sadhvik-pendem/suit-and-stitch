@@ -282,6 +282,9 @@ export async function submitMeasurements(req: Request, res: Response, next: Next
       });
 
       return { telemetry, order: updatedOrder };
+    }, {
+      maxWait: 15000,
+      timeout: 30000,
     });
 
     // 3. Invalidate / Blacklist the verification token JTI
@@ -304,6 +307,7 @@ export async function submitMeasurements(req: Request, res: Response, next: Next
       message: 'Body dimension telemetry recorded and transmitted to the atelier cutting queue.',
       orderId,
       status: OrderStatus.MEASUREMENTS_TAKEN,
+      order: formatOrder(transactionResult.order),
       data: {
         telemetry: {
           chest: transactionResult.telemetry.chest,

@@ -27,12 +27,11 @@ declare global {
 export function requireMeasurementToken(req: Request, res: Response, next: NextFunction): void {
   let token: string | undefined;
 
-  // Extract from Authorization header or custom X-Verification-Token header
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.split(' ')[1];
-  } else if (req.headers['x-verification-token']) {
+  // Extract from custom X-Verification-Token header or fallback to Authorization header
+  if (req.headers['x-verification-token']) {
     token = req.headers['x-verification-token'] as string;
+  } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
   }
 
   if (!token) {
