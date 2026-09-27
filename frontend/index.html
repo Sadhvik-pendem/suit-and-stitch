@@ -290,6 +290,8 @@
       const [selectedBoutique, setSelectedBoutique] = useState(null);
       const [bookingModalItem, setBookingModalItem] = useState(null);
       const [toast, setToast] = useState(null);
+      const [serverWakingUp, setServerWakingUp] = useState(false);
+      const [serverConnected, setServerConnected] = useState(false);
 
       const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -300,6 +302,43 @@
         const timer = setTimeout(() => setToast(null), 4000);
         return () => clearTimeout(timer);
       }, [toast]);
+
+      // Server health & cold-start detector
+      React.useEffect(() => {
+        let isMounted = true;
+        const timeoutId = setTimeout(() => {
+          if (!serverConnected && isMounted) {
+            setServerWakingUp(true);
+          }
+        }, 1800);
+
+        const checkHealth = async () => {
+          try {
+            const res = await fetch('/api/health');
+            if (res.ok) {
+              if (isMounted) {
+                setServerConnected(true);
+                setServerWakingUp(false);
+                clearTimeout(timeoutId);
+              }
+              return true;
+            }
+          } catch (e) {}
+          return false;
+        };
+
+        checkHealth();
+        const interval = setInterval(async () => {
+          const ok = await checkHealth();
+          if (ok) clearInterval(interval);
+        }, 3000);
+
+        return () => {
+          isMounted = false;
+          clearTimeout(timeoutId);
+          clearInterval(interval);
+        };
+      }, [serverConnected]);
 
       const handleLoginSuccess = (user) => {
         setCurrentUser(user);
@@ -510,6 +549,16 @@
               </div>
             </div>
           </header>
+
+          {serverWakingUp && !serverConnected && (
+            <div className="bg-[#121212] text-[#FAF8F5] border-b border-[#C5A880] px-4 py-2.5 text-xs flex items-center justify-center gap-2.5 animate-fade-in no-print">
+              <span className="w-2 h-2 rounded-full bg-[#C5A880] inline-block animate-ping"></span>
+              <span className="font-mono text-[10px] text-[#C5A880] uppercase tracking-wider font-semibold">Atelier Engine Standby:</span>
+              <span className="font-light text-neutral-300">
+                Resuming cloud database & real-time telemetry from cold standby (est. 15-25s)...
+              </span>
+            </div>
+          )}
 
           <main className="flex-grow max-w-7xl mx-auto w-full p-6 md:p-12">
             {!currentUser ? (
