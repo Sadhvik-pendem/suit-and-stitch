@@ -312,8 +312,11 @@
         appointmentSlot: 'Today at 11:30 AM',
         status: 'booked',
         associate: {
+          id: 'AST-8821',
           name: 'Ramesh Kumar',
-          phone: '+91 98765 22222'
+          phone: '+91 98765 22222',
+          rating: 4.9,
+          fittingsCount: 120
         },
         otp: '4829',
         measurements: null,
@@ -322,6 +325,44 @@
           sizingMethod: 'home_visit',
           collar: 'Peak Lapel',
           pocket: 'Classic Flap',
+          monogram: 'PS'
+        }
+      },
+      {
+        id: 'ORD-5542-2026',
+        customerEmail: 'customer@suitstitch.com',
+        customerName: 'Pooja Sharma',
+        customerPhone: '+91 98765 11111',
+        boutiqueId: 'boutique_2',
+        boutiqueName: 'Varanasi Weaves & Heritage Ateliers',
+        designId: 'dsg_102',
+        designName: 'Royal Banarasi Silk Sherwani',
+        price: 18500,
+        selectedFabric: 'Banarasi Zari Brocade',
+        deliveryAddress: 'House 45, 12th Main Road, Indiranagar, Bengaluru',
+        appointmentSlot: 'Completed on Sep 26, 2026',
+        status: 'delivered',
+        associate: {
+          id: 'AST-8821',
+          name: 'Ramesh Kumar',
+          phone: '+91 98765 22222',
+          rating: 4.9,
+          fittingsCount: 120
+        },
+        otp: '8192',
+        measurements: {
+          chest: 40.5,
+          waist: 34.0,
+          hips: 41.0,
+          inseam: 31.5,
+          neck: 16.0,
+          shoulders: 18.5
+        },
+        tailorNotes: 'Royal mandarin collar with fine gold zari embroidery.',
+        customOptions: {
+          sizingMethod: 'home_visit',
+          collar: 'Mandarin / Bandhgala Collar',
+          pocket: 'Minimalist Jetted',
           monogram: 'PS'
         }
       }
@@ -864,6 +905,8 @@
                   <CustomerOrdersView 
                     orders={orders.filter(o => o.customerEmail === currentUser.email)} 
                     onBrowse={() => { setActiveTab('browse'); setSelectedBoutique(null); }}
+                    showToast={showToast}
+                    updateOrderStatus={updateOrderStatus}
                   />
                 )}
 
@@ -2418,7 +2461,196 @@
       );
     }
 
-    function CustomerOrdersView({ orders, onBrowse }) {
+    /**
+     * Customer Fit & Stitching Review Modal (Post-Delivery Feedback)
+     */
+    function CustomerReviewModal({ order, initialReview, onClose, onSubmit }) {
+      const [associateRating, setAssociateRating] = useState(initialReview?.associateRating || 5);
+      const [stitchingRating, setStitchingRating] = useState(initialReview?.stitchingRating || 5);
+      const [fitComfort, setFitComfort] = useState(initialReview?.fitComfort || 'Flawless Fit');
+      const [comments, setComments] = useState(initialReview?.comments || '');
+
+      const fitOptions = ['Flawless Fit', 'Slightly Loose', 'Needs Adjustment'];
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit(order.id, {
+          associateRating,
+          stitchingRating,
+          fitComfort,
+          comments: comments.trim(),
+          reviewedAt: new Date().toISOString()
+        });
+      };
+
+      const StarSelector = ({ value, onChange, label, subtext }) => {
+        const [hovered, setHovered] = useState(0);
+        const activeVal = hovered || value;
+        const descriptors = {
+          1: 'Needs Improvement (1/5)',
+          2: 'Below Expectations (2/5)',
+          3: 'Satisfactory (3/5)',
+          4: 'Very Good (4/5)',
+          5: 'Exceptional (5/5)'
+        };
+
+        return (
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-baseline">
+              <label className="text-[10px] uppercase tracking-wider text-neutral-800 font-semibold block">{label}</label>
+              <span className="text-[10px] font-mono text-[#C5A880] font-bold">
+                {descriptors[activeVal]}
+              </span>
+            </div>
+            <p className="text-[10px] text-neutral-500 font-light">{subtext}</p>
+            <div className="flex items-center gap-2 pt-1" role="radiogroup" aria-label={label}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  type="button"
+                  key={star}
+                  onClick={() => onChange(star)}
+                  onMouseEnter={() => setHovered(star)}
+                  onMouseLeave={() => setHovered(0)}
+                  className={`text-2xl transition-transform duration-150 transform hover:scale-125 focus:outline-none cursor-pointer ${
+                    star <= activeVal ? 'text-[#C5A880]' : 'text-neutral-300'
+                  }`}
+                  aria-label={`${star} star`}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="review-title">
+          <div className="card-luxury w-full max-w-lg max-h-[92vh] overflow-y-auto p-6 sm:p-8 relative shadow-2xl">
+            <div className="flex justify-between items-start border-b border-[#E8E4DA] pb-4 mb-6">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-[#C5A880] block font-semibold">Post-Delivery Experience</span>
+                <h3 id="review-title" className="text-2xl font-serif-luxury mt-1 text-neutral-900">Rate Fit & Stitching</h3>
+                <span className="text-xs text-neutral-500 font-light">{order.designName} • {order.boutiqueName}</span>
+              </div>
+              <button onClick={onClose} className="text-neutral-400 hover:text-black text-sm p-1.5 cursor-pointer focus-luxury" aria-label="Close modal">✕</button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* 1. Associate Measurement Accuracy */}
+              <div className="bg-[#FAF8F5] p-4 border border-[#E8E4DA] rounded-sm">
+                <StarSelector
+                  value={associateRating}
+                  onChange={setAssociateRating}
+                  label="1. Associate Measurement Accuracy"
+                  subtext={`How precise was the naap taken by ${order.associate?.name || 'the field associate'}?`}
+                />
+              </div>
+
+              {/* 2. Masterji Stitching Quality */}
+              <div className="bg-[#FAF8F5] p-4 border border-[#E8E4DA] rounded-sm">
+                <StarSelector
+                  value={stitchingRating}
+                  onChange={setStitchingRating}
+                  label="2. Masterji Stitching & Craftsmanship"
+                  subtext="Quality of seams, inner canvas, lining, and fine hand-finishing."
+                />
+              </div>
+
+              {/* 3. Fit Comfort Pill Selector */}
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-neutral-800 font-semibold block mb-2">
+                  3. Fit Comfort & Silhouette
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {fitOptions.map((fit) => (
+                    <button
+                      type="button"
+                      key={fit}
+                      onClick={() => setFitComfort(fit)}
+                      className={`text-xs py-2.5 px-2 border transition-all text-center rounded-sm font-medium cursor-pointer ${
+                        fitComfort === fit
+                          ? 'bg-neutral-900 text-white border-neutral-900 font-semibold shadow-sm ring-1 ring-[#C5A880]'
+                          : 'bg-white border-[#E8E4DA] text-neutral-700 hover:border-[#C5A880]'
+                      }`}
+                    >
+                      {fit === 'Flawless Fit' ? '✨ ' : fit === 'Slightly Loose' ? '👕 ' : '✂️ '}
+                      {fit}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. Comments Box */}
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-neutral-800 font-semibold block mb-1">
+                  4. Tailoring Feedback & Notes (Optional)
+                </label>
+                <textarea
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                  placeholder="Share your thoughts on the drape, collar alignment, or doorstep visit experience..."
+                  rows={3}
+                  className="w-full border border-[#E8E4DA] p-3 text-xs outline-none focus:border-[#C5A880] rounded-sm bg-white font-light text-neutral-800"
+                />
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="btn-luxury-outline w-1/3 text-xs !py-3 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-luxury-solid w-2/3 text-xs !py-3 shadow-md cursor-pointer"
+                >
+                  Submit Fit & Stitching Review
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    function CustomerOrdersView({ orders, onBrowse, showToast, updateOrderStatus }) {
+      const [reviewOrder, setReviewOrder] = useState(null);
+      const [reviews, setReviews] = useState(() => {
+        try {
+          const saved = localStorage.getItem('suit_stitch_order_reviews');
+          return saved ? JSON.parse(saved) : {
+            'ORD-5542-2026': {
+              associateRating: 5,
+              stitchingRating: 5,
+              fitComfort: 'Flawless Fit',
+              comments: 'The silk fabric drape and bandhgala collar stitching are immaculate. Masterji fit is 100% spot-on!',
+              reviewedAt: '2026-09-27T10:00:00Z'
+            }
+          };
+        } catch (e) {
+          return {};
+        }
+      });
+
+      const handleSaveReview = (orderId, reviewData) => {
+        const updated = { ...reviews, [orderId]: reviewData };
+        setReviews(updated);
+        try {
+          localStorage.setItem('suit_stitch_order_reviews', JSON.stringify(updated));
+        } catch (e) {}
+        if (updateOrderStatus) {
+          updateOrderStatus(orderId, 'delivered', { review: reviewData });
+        }
+        setReviewOrder(null);
+        if (showToast) {
+          showToast('Thank you! Your fit & Masterji stitching review has been published.', 'success');
+        }
+      };
+
       const steps = [
         { label: 'Booked', desc: 'Order Placed & Boutique Confirmed' },
         { label: 'Associate Arriving', desc: 'Associate Arriving for Home Visit' },
@@ -2544,25 +2776,121 @@
                     </div>
                   </div>
 
-                  {o.status === 'booked' && (
-                    <div className="bg-[#FAF8F5] p-5 border border-[#E8E4DA] flex flex-col md:flex-row justify-between items-center gap-4">
-                      <div>
-                        <span className="text-[9px] uppercase tracking-widest text-[#C5A880] font-semibold block">
-                          {o.customOptions?.sizingMethod === 'sample_garment' ? 'Scheduled Sample Garment Pickup' : 'Scheduled Home Visit'}
-                        </span>
-                        <p className="text-xs text-neutral-800 mt-1">
-                          Associate <strong>{o.associate.name}</strong> will arrive at: <strong>{o.appointmentSlot}</strong>
+                  {/* 1. Associate Trust & ID Card with Security OTP (Booked & Arriving Status) */}
+                  {(o.status === 'booked' || o.status === 'associate_arriving') && (
+                    <div className="bg-[#FAF8F5] p-5 md:p-6 border border-[#E8E4DA] flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-6 rounded-sm">
+                      {/* Left: Scheduled Visit Details */}
+                      <div className="flex-1 space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[9px] uppercase tracking-widest text-[#C5A880] font-semibold block">
+                            {o.customOptions?.sizingMethod === 'sample_garment' ? 'Scheduled Sample Garment Pickup' : 'Scheduled Home Visit'}
+                          </span>
+                          {o.status === 'associate_arriving' && (
+                            <span className="text-[9px] font-mono uppercase bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full font-semibold animate-pulse">
+                              ● Associate En Route
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-neutral-800">
+                          Visit window: <strong>{o.appointmentSlot}</strong>
                         </p>
-                        <p className="text-[11px] text-neutral-500">
+                        <p className="text-[11px] text-neutral-500 font-light">
                           {o.customOptions?.sizingMethod === 'sample_garment'
                             ? 'Keep your sample fitting garment ready. Share this 4-digit OTP during handover.'
-                            : 'Share this 4-digit OTP with the associate when they arrive at your home.'}
+                            : 'Trained associate visits with measuring tape and fabric swatches.'}
                         </p>
                       </div>
-                      <div className="text-center md:text-right">
-                        <span className="text-[9px] uppercase font-mono tracking-widest text-neutral-400 block">Doorstep Verification OTP</span>
-                        <span className="text-3xl font-mono font-bold tracking-[0.25em] text-[#C5A880]">{o.otp}</span>
+
+                      {/* Middle: Associate Trust & ID Card */}
+                      <div className="bg-white border border-[#E8E4DA] p-3.5 sm:p-4 rounded-sm shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3.5 min-w-[280px]">
+                        <div className="w-12 h-12 rounded-full bg-[#121212] text-[#C5A880] border-2 border-[#C5A880] flex items-center justify-center font-serif-luxury text-lg font-bold shadow-inner shrink-0 relative">
+                          {o.associate?.name ? o.associate.name.charAt(0) : 'R'}
+                          <span className="absolute -bottom-1 -right-1 bg-green-700 text-white rounded-full p-0.5 text-[8px]" title="Verified Partner">✓</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-mono uppercase tracking-wider bg-neutral-100 border border-neutral-300 px-1.5 py-0.2 rounded text-neutral-700 font-bold">
+                              ID: {o.associate?.id || 'AST-8821'}
+                            </span>
+                            <span className="text-[10px] text-amber-600 font-bold flex items-center gap-0.5">
+                              ★ {o.associate?.rating || '4.9'} <span className="text-neutral-400 font-normal text-[9px]">({o.associate?.fittingsCount || '120'}+ fittings)</span>
+                            </span>
+                          </div>
+                          <h5 className="font-semibold text-xs text-neutral-900 leading-tight">
+                            {o.associate?.name || 'Ramesh Kumar'}
+                          </h5>
+                          <p className="text-[9px] text-neutral-500 font-light leading-snug">
+                            Verified Tailoring Partner • Check photo ID before sharing OTP
+                          </p>
+                        </div>
                       </div>
+
+                      {/* Right: Security OTP */}
+                      <div className="text-center lg:text-right bg-white lg:bg-transparent p-3 lg:p-0 border lg:border-0 border-[#E8E4DA] rounded-sm shrink-0">
+                        <span className="text-[9px] uppercase font-mono tracking-widest text-neutral-400 block">
+                          Doorstep Verification OTP
+                        </span>
+                        <span className="text-3xl font-mono font-bold tracking-[0.25em] text-[#C5A880]">
+                          {o.otp}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2. Customer Post-Delivery Review & Rating Section */}
+                  {o.status === 'delivered' && (
+                    <div className="bg-[#FAF8F5] border border-[#E8E4DA] p-5 md:p-6 rounded-sm">
+                      {reviews[o.id] ? (
+                        <div className="space-y-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E8E4DA] pb-2">
+                            <span className="text-[10px] uppercase font-mono tracking-widest text-[#C5A880] font-bold flex items-center gap-1.5">
+                              <span>★</span> Verified Client Review & Rating
+                            </span>
+                            <button
+                              onClick={() => setReviewOrder(o)}
+                              className="text-[10px] uppercase tracking-wider text-neutral-500 hover:text-black font-semibold underline self-start sm:self-auto cursor-pointer"
+                            >
+                              Update Review
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-3 text-xs">
+                            <span className="bg-white border border-[#E8E4DA] px-2.5 py-1 text-neutral-800 rounded-sm">
+                              Associate Sizing: <strong className="text-amber-600">{'★'.repeat(reviews[o.id].associateRating)} ({reviews[o.id].associateRating}/5)</strong>
+                            </span>
+                            <span className="bg-white border border-[#E8E4DA] px-2.5 py-1 text-neutral-800 rounded-sm">
+                              Masterji Stitching: <strong className="text-amber-600">{'★'.repeat(reviews[o.id].stitchingRating)} ({reviews[o.id].stitchingRating}/5)</strong>
+                            </span>
+                            <span className="bg-[#121212] text-[#FAF8F5] px-2.5 py-1 rounded-sm font-medium">
+                              Fit Comfort: <strong className="text-[#C5A880]">{reviews[o.id].fitComfort}</strong>
+                            </span>
+                          </div>
+                          {reviews[o.id].comments && (
+                            <p className="text-xs text-neutral-600 italic bg-white p-3 border border-[#E8E4DA] font-light">
+                              "{reviews[o.id].comments}"
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-neutral-900">Garment Delivered & Ready to Wear</span>
+                              <span className="text-[9px] uppercase tracking-wider bg-green-100 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-bold">
+                                Handover Complete
+                              </span>
+                            </div>
+                            <p className="text-xs text-neutral-500 font-light">
+                              How does your bespoke outfit feel? Rate the associate measurement accuracy and Masterji stitching craft.
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setReviewOrder(o)}
+                            className="btn-luxury-solid !py-2.5 !px-5 text-xs flex items-center gap-1.5 shrink-0 shadow-md cursor-pointer"
+                          >
+                            <span>★</span> Rate Fit & Stitching
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -2619,6 +2947,16 @@
               );
             })}
           </div>
+
+          {/* Customer Review & Rating Modal */}
+          {reviewOrder && (
+            <CustomerReviewModal
+              order={reviewOrder}
+              initialReview={reviews[reviewOrder.id]}
+              onClose={() => setReviewOrder(null)}
+              onSubmit={handleSaveReview}
+            />
+          )}
         </div>
       );
     }
