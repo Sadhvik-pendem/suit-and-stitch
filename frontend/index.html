@@ -154,6 +154,10 @@
 
     /* Print Stylesheet for Workshop Physical Pattern Cards */
     @media print {
+      @page {
+        size: A4 portrait;
+        margin: 15mm;
+      }
       body {
         background-color: #FFFFFF !important;
         color: #000000 !important;
@@ -887,7 +891,7 @@
                     {/* 3 Pillars of Tailoring Craftsmanship (Shown on homepage) */}
                     {!selectedBoutique && (
                       <div className="mt-16 pt-12 border-t border-[#E8E4DA] grid grid-cols-1 md:grid-cols-3 gap-8 text-neutral-800">
-                        <div className="card-luxury p-6 flex flex-col justify-between">
+                        <div className="card-luxury p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                           <div>
                             <span className="text-2xl font-serif-luxury text-[#C5A880] block mb-2">01</span>
                             <h3 className="text-lg font-serif-luxury font-semibold mb-2">Home Measurement Visit</h3>
@@ -898,7 +902,7 @@
                           <span className="text-[10px] uppercase font-mono text-[#C5A880] tracking-wider mt-4">Verified Home Sizing</span>
                         </div>
 
-                        <div className="card-luxury p-6 flex flex-col justify-between">
+                        <div className="card-luxury p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                           <div>
                             <span className="text-2xl font-serif-luxury text-[#C5A880] block mb-2">02</span>
                             <h3 className="text-lg font-serif-luxury font-semibold mb-2">Master Tailor Craftsmanship</h3>
@@ -909,7 +913,7 @@
                           <span className="text-[10px] uppercase font-mono text-[#C5A880] tracking-wider mt-4">Masterji Quality Standard</span>
                         </div>
 
-                        <div className="card-luxury p-6 flex flex-col justify-between">
+                        <div className="card-luxury p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                           <div>
                             <span className="text-2xl font-serif-luxury text-[#C5A880] block mb-2">03</span>
                             <h3 className="text-lg font-serif-luxury font-semibold mb-2">Doorstep Delivery & Handover</h3>
@@ -1779,6 +1783,159 @@
       );
     }
 
+    function getFabricSwatchStyle(fabricName) {
+      const name = (fabricName || '').toLowerCase();
+      if (name.includes('charcoal') || name.includes('tweed') || name.includes('wool')) {
+        return {
+          background: 'linear-gradient(135deg, #3A3D40 0%, #1E2022 50%, #2A2D30 100%)',
+          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.2)',
+          border: '1px solid #4B5563'
+        };
+      }
+      if (name.includes('banarasi') || name.includes('zari') || name.includes('gold') || name.includes('brocade')) {
+        return {
+          background: 'radial-gradient(ellipse at center, #E5C378 0%, #C5A880 50%, #8C6D3B 100%)',
+          boxShadow: 'inset 0 0 4px rgba(255, 235, 170, 0.6)',
+          border: '1px solid #B38E5D'
+        };
+      }
+      if (name.includes('emerald') || name.includes('velvet')) {
+        return {
+          background: 'radial-gradient(circle at 30% 30%, #157347 0%, #0B4226 60%, #052414 100%)',
+          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.25)',
+          border: '1px solid #198754'
+        };
+      }
+      if (name.includes('silk') || name.includes('katan') || name.includes('satin') || name.includes('mulberry')) {
+        return {
+          background: 'linear-gradient(135deg, #FFF9F0 0%, #E8D8C3 50%, #C8B293 100%)',
+          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.8)',
+          border: '1px solid #D6C2A5'
+        };
+      }
+      if (name.includes('raw silk') || name.includes('matka') || name.includes('varanasi')) {
+        return {
+          background: 'linear-gradient(45deg, #E6D5B8 25%, #D4BE98 50%, #C2A77B 75%)',
+          boxShadow: 'inset 0 1px 1px rgba(0,0,0,0.1)',
+          border: '1px solid #C5A880'
+        };
+      }
+      if (name.includes('twill') || name.includes('cotton') || name.includes('linen')) {
+        return {
+          background: 'linear-gradient(135deg, #F1F5F9 0%, #CBD5E1 50%, #94A3B8 100%)',
+          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6)',
+          border: '1px solid #94A3B8'
+        };
+      }
+      if (name.includes('midnight') || name.includes('black') || name.includes('tuxedo')) {
+        return {
+          background: 'linear-gradient(135deg, #222222 0%, #111111 60%, #000000 100%)',
+          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.15)',
+          border: '1px solid #374151'
+        };
+      }
+      return {
+        background: 'linear-gradient(135deg, #E8E4DA 0%, #C5A880 50%, #A3855C 100%)',
+        boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.4)',
+        border: '1px solid #C5A880'
+      };
+    }
+
+    function GarmentDesignCard({ design, boutique, onOpenBooking, currency }) {
+      const [selectedFabric, setSelectedFabric] = useState(design.fabricOptions && design.fabricOptions.length > 0 ? design.fabricOptions[0] : '');
+      const [hoveredFabric, setHoveredFabric] = useState(null);
+
+      const activeFabric = hoveredFabric || selectedFabric;
+
+      return (
+        <div className="card-luxury overflow-hidden flex flex-col justify-between group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+          <div className="aspect-[4/3] bg-neutral-100 overflow-hidden relative">
+            <img 
+              src={design.image} 
+              alt={design.name} 
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+            />
+            
+            {/* Subtle SVG Gold Badge: Masterji Fit Guarantee */}
+            <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md border border-[#C5A880]/70 px-2.5 py-1 rounded-sm flex items-center gap-1.5 shadow-md">
+              <svg className="w-3.5 h-3.5 text-[#C5A880] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+              </svg>
+              <span className="text-[9px] uppercase tracking-widest text-[#FAF8F5] font-semibold">Masterji Fit Guarantee</span>
+            </div>
+
+            <span className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3 py-1 text-xs font-semibold text-neutral-900 shadow-sm">
+              {formatPrice(design.price, currency)}
+            </span>
+          </div>
+
+          <div className="p-8 flex-grow flex flex-col justify-between">
+            <div>
+              <span className="text-[9px] uppercase tracking-widest text-[#C5A880] font-semibold">{design.category}</span>
+              <h4 className="text-2xl font-serif-luxury mt-1">{design.name}</h4>
+              <p className="text-xs text-neutral-500 font-light mt-3 leading-relaxed">{design.description}</p>
+              
+              {/* Interactive Fabric Swatches */}
+              <div className="mt-5">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[9px] uppercase tracking-widest text-neutral-400">Available Fabrics:</span>
+                  <span className="text-[10px] font-medium text-neutral-800 transition-colors">
+                    {activeFabric}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  {design.fabricOptions && design.fabricOptions.map((f, i) => {
+                    const isSelected = selectedFabric === f;
+                    const style = getFabricSwatchStyle(f);
+                    return (
+                      <div key={i} className="relative group/swatch">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedFabric(f)}
+                          onMouseEnter={() => setHoveredFabric(f)}
+                          onMouseLeave={() => setHoveredFabric(null)}
+                          style={style}
+                          className={`w-7 h-7 rounded-full cursor-pointer transition-all duration-200 transform hover:scale-110 flex items-center justify-center focus-luxury ${
+                            isSelected 
+                              ? 'ring-2 ring-[#C5A880] ring-offset-2 scale-105 shadow-md' 
+                              : 'opacity-85 hover:opacity-100 hover:shadow-sm'
+                          }`}
+                          aria-label={`Select fabric: ${f}`}
+                        >
+                          {isSelected && (
+                            <span className="w-1.5 h-1.5 bg-[#FAF8F5] rounded-full shadow-sm"></span>
+                          )}
+                        </button>
+                        
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/swatch:flex flex-col items-center pointer-events-none z-30">
+                          <span className="bg-neutral-900/95 backdrop-blur-sm text-white text-[9px] font-medium px-2 py-0.5 rounded shadow-lg whitespace-nowrap">
+                            {f}
+                          </span>
+                          <span className="w-1.5 h-1.5 bg-neutral-900/95 rotate-45 -mt-0.5"></span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-4 text-[11px] text-neutral-400">
+                Estimated stitching time: <span className="font-semibold text-neutral-800">{design.leadTimeDays} business days</span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => onOpenBooking({ boutique, design, initialFabric: selectedFabric })} 
+              className="btn-luxury-solid w-full mt-6 focus-luxury"
+            >
+              Book Home Measurement Visit
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     function CustomerCatalogView({ boutiques, selectedBoutique, setSelectedBoutique, onOpenBooking, currency = 'INR' }) {
       const boutiqueList = (boutiques && boutiques.length > 0) ? boutiques : BOUTIQUES_MOCK;
       const [categoryFilter, setCategoryFilter] = useState('ALL');
@@ -1806,7 +1963,7 @@
 
               <div className="grid md:grid-cols-2 gap-8 mt-6">
                 {boutiqueList.map((b) => (
-                  <div key={b.id} className="card-luxury overflow-hidden flex flex-col justify-between group">
+                  <div key={b.id} className="card-luxury overflow-hidden flex flex-col justify-between group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                     <div className="h-56 overflow-hidden relative">
                       <img src={b.banner} alt={b.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -1856,43 +2013,13 @@
 
               <div className="grid md:grid-cols-2 gap-10">
                 {filteredCatalog.map((design) => (
-                  <div key={design.id} className="card-luxury overflow-hidden flex flex-col justify-between">
-                    <div className="aspect-[4/3] bg-neutral-100 overflow-hidden relative">
-                      <img src={design.image} alt={design.name} className="w-full h-full object-cover" />
-                      <span className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3 py-1 text-xs font-semibold text-neutral-900 shadow-sm">
-                        {formatPrice(design.price, currency)}
-                      </span>
-                    </div>
-                    <div className="p-8 flex-grow flex flex-col justify-between">
-                      <div>
-                        <span className="text-[9px] uppercase tracking-widest text-[#C5A880] font-semibold">{design.category}</span>
-                        <h4 className="text-2xl font-serif-luxury mt-1">{design.name}</h4>
-                        <p className="text-xs text-neutral-500 font-light mt-3 leading-relaxed">{design.description}</p>
-                        
-                        <div className="mt-5">
-                          <span className="text-[9px] uppercase tracking-widest text-neutral-400 block mb-2">Available Fabrics</span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {design.fabricOptions.map((f, i) => (
-                              <span key={i} className="text-[10px] bg-neutral-50 border border-[#E8E4DA] px-2 py-0.5 text-neutral-700">
-                                {f}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="mt-4 text-[11px] text-neutral-400">
-                          Estimated stitching time: <span className="font-semibold text-neutral-800">{design.leadTimeDays} business days</span>
-                        </div>
-                      </div>
-
-                      <button 
-                        onClick={() => onOpenBooking({ boutique: selectedBoutique, design })} 
-                        className="btn-luxury-solid w-full mt-6 focus-luxury"
-                      >
-                        Book Home Measurement Visit
-                      </button>
-                    </div>
-                  </div>
+                  <GarmentDesignCard 
+                    key={design.id}
+                    design={design}
+                    boutique={selectedBoutique}
+                    onOpenBooking={onOpenBooking}
+                    currency={currency}
+                  />
                 ))}
               </div>
             </div>
@@ -1990,7 +2117,7 @@
     }
 
     function BookingWizardModal({ item, customer, onClose, onSubmit }) {
-      const [fabric, setFabric] = useState(item.design.fabricOptions[0]);
+      const [fabric, setFabric] = useState(item.initialFabric || item.design.fabricOptions[0]);
       const [address, setAddress] = useState(customer?.address || '');
       const [date, setDate] = useState('2026-10-02');
       const [time, setTime] = useState('11:00 AM - 01:00 PM');
@@ -2315,24 +2442,38 @@
             headers['X-Verification-Token'] = verificationToken;
           }
 
+          const parsedChest = parseFloat(chest) || 0;
+          const parsedWaist = parseFloat(waist) || 0;
+          const parsedHips = parseFloat(hips) || 0;
+          const parsedInseam = parseFloat(inseam) || 0;
+          const parsedNeck = parseFloat(neck) || 0;
+          const parsedShoulders = parseFloat(shoulders) || 0;
+
           const res = await fetch('/api/associate/submit-measurements', {
             method: 'POST',
             headers,
             body: JSON.stringify({
               orderId: selectedOrderId,
-              chest: parseFloat(chest),
-              waist: parseFloat(waist),
-              hips: parseFloat(hips),
-              inseam: parseFloat(inseam),
-              neck: parseFloat(neck),
-              shoulders: parseFloat(shoulders),
+              chest: parsedChest,
+              waist: parsedWaist,
+              hips: parsedHips,
+              inseam: parsedInseam,
+              neck: parsedNeck,
+              shoulders: parsedShoulders,
               tailorNotes: notes
             })
           });
           const data = await res.json();
           if (res.ok && data.success) {
             updateOrderStatus(selectedOrderId, 'measurements_taken', {
-              measurements: { chest, waist, hips, inseam, neck, shoulders },
+              measurements: { 
+                chest: parsedChest, 
+                waist: parsedWaist, 
+                hips: parsedHips, 
+                inseam: parsedInseam, 
+                neck: parsedNeck, 
+                shoulders: parsedShoulders 
+              },
               tailorNotes: notes
             });
             if (fetchOrders) fetchOrders();
@@ -2352,8 +2493,22 @@
         }
 
         // Local fallback
+        const parsedChest = parseFloat(chest) || 0;
+        const parsedWaist = parseFloat(waist) || 0;
+        const parsedHips = parseFloat(hips) || 0;
+        const parsedInseam = parseFloat(inseam) || 0;
+        const parsedNeck = parseFloat(neck) || 0;
+        const parsedShoulders = parseFloat(shoulders) || 0;
+
         updateOrderStatus(selectedOrderId, 'measurements_taken', {
-          measurements: { chest, waist, hips, inseam, neck, shoulders },
+          measurements: { 
+            chest: parsedChest, 
+            waist: parsedWaist, 
+            hips: parsedHips, 
+            inseam: parsedInseam, 
+            neck: parsedNeck, 
+            shoulders: parsedShoulders 
+          },
           tailorNotes: notes
         });
         notify('Measurements sent to the boutique (local session)!', 'success');
@@ -2449,6 +2604,8 @@
                       <input 
                         type="number" 
                         step="0.1" 
+                        min="0"
+                        max="100"
                         inputMode="decimal"
                         pattern="[0-9]*[.]?[0-9]*"
                         value={chest} 
@@ -2463,6 +2620,8 @@
                       <input 
                         type="number" 
                         step="0.1" 
+                        min="0"
+                        max="100"
                         inputMode="decimal"
                         pattern="[0-9]*[.]?[0-9]*"
                         value={waist} 
@@ -2477,6 +2636,8 @@
                       <input 
                         type="number" 
                         step="0.1" 
+                        min="0"
+                        max="100"
                         inputMode="decimal"
                         pattern="[0-9]*[.]?[0-9]*"
                         value={hips} 
@@ -2491,6 +2652,8 @@
                       <input 
                         type="number" 
                         step="0.1" 
+                        min="0"
+                        max="100"
                         inputMode="decimal"
                         pattern="[0-9]*[.]?[0-9]*"
                         value={inseam} 
@@ -2505,6 +2668,8 @@
                       <input 
                         type="number" 
                         step="0.1" 
+                        min="0"
+                        max="100"
                         inputMode="decimal"
                         pattern="[0-9]*[.]?[0-9]*"
                         value={neck} 
@@ -2519,6 +2684,8 @@
                       <input 
                         type="number" 
                         step="0.1" 
+                        min="0"
+                        max="100"
                         inputMode="decimal"
                         pattern="[0-9]*[.]?[0-9]*"
                         value={shoulders} 
