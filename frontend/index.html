@@ -3535,8 +3535,14 @@
                     className="text-xs bg-transparent outline-none font-medium text-neutral-800 cursor-pointer"
                   >
                     <option value="ALL">All Partner Studios ({orders.length})</option>
-                    <option value="boutique_1">Darzi & Co. Haute Atelier ({orders.filter(o => o.boutiqueId === 'boutique_1').length})</option>
-                    <option value="boutique_2">Priya Studio Luxe ({orders.filter(o => o.boutiqueId === 'boutique_2').length})</option>
+                    {(boutiques && boutiques.length > 0 ? boutiques : [
+                      { id: 'boutique_1', name: 'Darzi & Co. Haute Atelier' },
+                      { id: 'boutique_2', name: 'Priya Studio Luxe' }
+                    ]).map(b => (
+                      <option key={b.id} value={b.id}>
+                        {b.name} ({orders.filter(o => o.boutiqueId === b.id).length})
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
