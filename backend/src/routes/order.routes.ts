@@ -6,6 +6,7 @@ import {
   verifyOrderOtp,
   recordMeasurements,
   updateOrderStatus,
+  purgeAllOrders,
 } from '../controllers/order.controller';
 import { authenticateJWT, requireRole } from '../middleware/auth.middleware';
 
@@ -33,4 +34,8 @@ router.patch(
   updateOrderStatus
 );
 
+// Maintenance: Purge all orders & telemetry (clean slate)
+router.delete('/purge-all', purgeAllOrders);
+
 export default router;
+

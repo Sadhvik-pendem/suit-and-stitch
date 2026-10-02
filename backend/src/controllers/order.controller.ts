@@ -375,3 +375,21 @@ export async function updateOrderStatus(req: Request, res: Response, next: NextF
     next(error);
   }
 }
+
+/**
+ * DELETE /api/orders/purge-all
+ * Maintenance: Clears all orders and telemetry from the database
+ */
+export async function purgeAllOrders(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    await prisma.measurementTelemetry.deleteMany();
+    const result = await prisma.order.deleteMany();
+    res.status(200).json({
+      success: true,
+      message: `Successfully cleared all orders (${result.count} deleted). Clean pipeline ready.`,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+

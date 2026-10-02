@@ -180,77 +180,7 @@ async function main() {
   });
 
   console.log('✓ Created 4 signature bespoke garment catalogs across both ateliers.');
-
-  // 5. Create Active Seed Order matching frontend INITIAL_ORDERS
-  // Demo OTP is '4829'
-  const activeOrderOtpHash = hashSecret('4829');
-
-  const activeOrder = await prisma.order.create({
-    data: {
-      id: 'ORD-7291-2026',
-      customerId: customerUser.id,
-      boutiqueId: boutique1.id,
-      designId: suitDesign.id,
-      selectedFabric: 'Italian Wool Blend',
-      deliveryAddress: 'House 45, 12th Main Road, Indiranagar, Bengaluru',
-      appointmentSlot: 'Today at 11:30 AM',
-      status: OrderStatus.BOOKED,
-      otpHash: activeOrderOtpHash,
-      assignedAssociateId: associateUser.id,
-      assignedDeliveryId: deliveryUser.id,
-    },
-  });
-
-  console.log(`✓ Created active demo order: ${activeOrder.id} (OTP: 4829) for Darzi & Co.`);
-
-  // 6. Create Seed Orders for Priya Studio Luxe (boutique2)
-  const priyaOrder1 = await prisma.order.create({
-    data: {
-      id: 'ORD-8834-2026',
-      customerId: customerUser.id,
-      boutiqueId: boutique2.id,
-      designId: velvetGownDesign.id,
-      selectedFabric: 'Royal Emerald Velvet',
-      deliveryAddress: 'Apt 4B, Defense Colony, New Delhi',
-      appointmentSlot: 'Yesterday at 3:00 PM',
-      status: OrderStatus.MEASUREMENTS_TAKEN,
-      otpHash: hashSecret('5521'),
-      assignedAssociateId: associateUser.id,
-      assignedDeliveryId: deliveryUser.id,
-    },
-  });
-
-  await prisma.measurementTelemetry.create({
-    data: {
-      orderId: priyaOrder1.id,
-      chest: 36.0,
-      waist: 28.5,
-      hips: 38.0,
-      inseam: 31.0,
-      neck: 14.0,
-      shoulders: 15.5,
-      tailorNotes: 'Bias cut evening gown drape. High waist corsetry fitting requested.',
-    },
-  });
-
-  const priyaOrder2 = await prisma.order.create({
-    data: {
-      id: 'ORD-9120-2026',
-      customerId: customerUser.id,
-      boutiqueId: boutique2.id,
-      designId: bandhgalaDesign.id,
-      selectedFabric: 'Varanasi Raw Silk',
-      deliveryAddress: 'Villa 12, Golf Links, New Delhi',
-      appointmentSlot: 'Tomorrow at 4:00 PM',
-      status: OrderStatus.BOOKED,
-      otpHash: hashSecret('6219'),
-      assignedAssociateId: associateUser.id,
-      assignedDeliveryId: deliveryUser.id,
-    },
-  });
-
-  console.log(`✓ Created Priya Studio Luxe demo orders: ${priyaOrder1.id} (Active Stitching) & ${priyaOrder2.id} (Booked)`);
-
+  console.log('✓ Zero default demo orders seeded (clean order queues).');
   console.log('--- Database Seeding Completed Successfully ---');
 }
 
