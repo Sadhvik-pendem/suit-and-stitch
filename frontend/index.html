@@ -211,6 +211,20 @@
         phone: '+91 98765 33333',
         boutiqueId: 'boutique_1'
       },
+      'priya@priyastudioluxe.com': {
+        name: 'Priya Studio Luxe',
+        role: 'boutique_partner',
+        password: 'password123',
+        phone: '+91 98765 33334',
+        boutiqueId: 'boutique_2'
+      },
+      'boutique@priyastudio.com': {
+        name: 'Priya Studio Luxe',
+        role: 'boutique_partner',
+        password: 'password123',
+        phone: '+91 98765 33334',
+        boutiqueId: 'boutique_2'
+      },
       'delivery@suitstitch.com': {
         name: 'Kiran Patel',
         role: 'delivery_partner',
@@ -329,16 +343,85 @@
         }
       },
       {
+        id: 'ORD-8834-2026',
+        customerEmail: 'customer@suitstitch.com',
+        customerName: 'Ananya Deshmukh',
+        customerPhone: '+91 98765 77777',
+        boutiqueId: 'boutique_2',
+        boutiqueName: 'Priya Studio Luxe',
+        designId: 'dsg_201',
+        designName: 'Deep Emerald Velvet Evening Gown',
+        price: 7800,
+        selectedFabric: 'Royal Emerald Velvet',
+        deliveryAddress: 'Penthouse 4B, Defence Colony, New Delhi',
+        appointmentSlot: 'Today at 03:00 PM',
+        status: 'measurements_taken',
+        associate: {
+          id: 'AST-8821',
+          name: 'Ramesh Kumar',
+          phone: '+91 98765 22222',
+          rating: 4.9,
+          fittingsCount: 120
+        },
+        otp: '3819',
+        measurements: {
+          chest: 36.0,
+          waist: 28.5,
+          hips: 38.0,
+          inseam: 32.0,
+          neck: 14.5,
+          shoulders: 15.5
+        },
+        tailorNotes: 'Bias cut flare with internal boning. Masterji to ensure extra 0.5 inch drape.',
+        customOptions: {
+          sizingMethod: 'home_visit',
+          collar: 'Peak Lapel',
+          pocket: 'Minimalist Jetted',
+          monogram: 'AD'
+        }
+      },
+      {
+        id: 'ORD-9120-2026',
+        customerEmail: 'customer@suitstitch.com',
+        customerName: 'Vikramaditya Singhania',
+        customerPhone: '+91 98765 88888',
+        boutiqueId: 'boutique_2',
+        boutiqueName: 'Priya Studio Luxe',
+        designId: 'dsg_202',
+        designName: 'Ivory Raw Silk Bandhgala Tuxedo',
+        price: 9200,
+        selectedFabric: 'Varanasi Raw Silk',
+        deliveryAddress: 'Villa 12, Golf Links, New Delhi',
+        appointmentSlot: 'Tomorrow at 02:00 PM',
+        status: 'booked',
+        associate: {
+          id: 'AST-8821',
+          name: 'Ramesh Kumar',
+          phone: '+91 98765 22222',
+          rating: 4.9,
+          fittingsCount: 120
+        },
+        otp: '6741',
+        measurements: null,
+        tailorNotes: '',
+        customOptions: {
+          sizingMethod: 'sample_garment',
+          collar: 'Mandarin / Bandhgala Collar',
+          pocket: 'Classic Flap',
+          monogram: 'VS'
+        }
+      },
+      {
         id: 'ORD-5542-2026',
         customerEmail: 'customer@suitstitch.com',
         customerName: 'Pooja Sharma',
         customerPhone: '+91 98765 11111',
         boutiqueId: 'boutique_2',
-        boutiqueName: 'Varanasi Weaves & Heritage Ateliers',
-        designId: 'dsg_102',
-        designName: 'Royal Banarasi Silk Sherwani',
-        price: 18500,
-        selectedFabric: 'Banarasi Zari Brocade',
+        boutiqueName: 'Priya Studio Luxe',
+        designId: 'dsg_202',
+        designName: 'Ivory Raw Silk Bandhgala Tuxedo',
+        price: 9200,
+        selectedFabric: 'Varanasi Raw Silk',
         deliveryAddress: 'House 45, 12th Main Road, Indiranagar, Bengaluru',
         appointmentSlot: 'Completed on Sep 26, 2026',
         status: 'delivered',
@@ -876,11 +959,12 @@
 
                 {currentUser.role === 'boutique_partner' && (
                   <BoutiquePartnerView 
-                    orders={orders.filter(o => !currentUser.boutiqueId || o.boutiqueId === currentUser.boutiqueId)} 
+                    orders={orders} 
                     updateOrderStatus={updateOrderStatus}
                     currentUser={currentUser}
                     fetchOrders={fetchOrders}
                     showToast={showToast}
+                    boutiques={boutiques}
                   />
                 )}
 
@@ -1687,9 +1771,22 @@
                   className="p-3 border border-[#E8E4DA] bg-white hover:border-[#C5A880] hover:shadow-sm transition-all text-left group flex items-start justify-between focus-luxury"
                 >
                   <div>
-                    <span className="text-[9px] font-mono text-[#C5A880] uppercase tracking-wider block font-bold">3. Boutique & Masterji</span>
+                    <span className="text-[9px] font-mono text-[#C5A880] uppercase tracking-wider block font-bold">3a. Boutique (Bengaluru)</span>
                     <span className="font-semibold text-neutral-900 text-xs block group-hover:text-[#C5A880] transition-colors">Darzi & Co. Studio</span>
                     <span className="text-[10px] text-neutral-500">Stitching Orders & Naap Slips</span>
+                  </div>
+                  <span className="text-xs text-neutral-300 group-hover:text-[#C5A880] transition-colors">→</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  onClick={() => quickLogin('priya@priyastudioluxe.com')} 
+                  className="p-3 border border-[#E8E4DA] bg-white hover:border-[#C5A880] hover:shadow-sm transition-all text-left group flex items-start justify-between focus-luxury"
+                >
+                  <div>
+                    <span className="text-[9px] font-mono text-[#C5A880] uppercase tracking-wider block font-bold">3b. Boutique (New Delhi)</span>
+                    <span className="font-semibold text-neutral-900 text-xs block group-hover:text-[#C5A880] transition-colors">Priya Studio Luxe</span>
+                    <span className="text-[10px] text-neutral-500">Velvet & Silk Couture Queue</span>
                   </div>
                   <span className="text-xs text-neutral-300 group-hover:text-[#C5A880] transition-colors">→</span>
                 </button>
@@ -3345,13 +3442,18 @@
       );
     }
 
-    function BoutiquePartnerView({ orders, updateOrderStatus, currentUser, fetchOrders, showToast }) {
+    function BoutiquePartnerView({ orders, updateOrderStatus, currentUser, fetchOrders, showToast, boutiques }) {
       const [tab, setTab] = useState('production');
       const [loadingId, setLoadingId] = useState(null);
+      const [selectedBoutiqueId, setSelectedBoutiqueId] = useState(() => currentUser?.boutiqueId || 'ALL');
 
-      const awaitingFitting = orders.filter(o => o.status === 'booked' || o.status === 'associate_arriving');
-      const inProduction = orders.filter(o => o.status === 'measurements_taken' || o.status === 'in_production');
-      const completed = orders.filter(o => o.status === 'dispatched' || o.status === 'delivered');
+      const studioOrders = selectedBoutiqueId === 'ALL'
+        ? orders
+        : orders.filter(o => o.boutiqueId === selectedBoutiqueId);
+
+      const awaitingFitting = studioOrders.filter(o => o.status === 'booked' || o.status === 'associate_arriving');
+      const inProduction = studioOrders.filter(o => o.status === 'measurements_taken' || o.status === 'in_production');
+      const completed = studioOrders.filter(o => o.status === 'dispatched' || o.status === 'delivered');
 
       const notify = (msg, type = 'success') => {
         if (showToast) showToast(msg, type);
@@ -3423,16 +3525,30 @@
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#E8E4DA] pb-6 gap-4 no-print">
             <div>
               <span className="text-[10px] uppercase tracking-widest text-[#C5A880] block font-semibold">Boutique & Masterji Studio</span>
-              <h2 className="text-3xl font-serif-luxury">Stitching Orders Queue</h2>
+              <div className="flex flex-wrap items-center gap-3 mt-1">
+                <h2 className="text-3xl font-serif-luxury">Stitching Orders Queue</h2>
+                <div className="flex items-center gap-1.5 bg-white border border-[#E8E4DA] px-2.5 py-1 rounded-sm shadow-sm">
+                  <span className="text-[9px] uppercase font-mono text-neutral-400 font-semibold">Atelier:</span>
+                  <select
+                    value={selectedBoutiqueId}
+                    onChange={(e) => setSelectedBoutiqueId(e.target.value)}
+                    className="text-xs bg-transparent outline-none font-medium text-neutral-800 cursor-pointer"
+                  >
+                    <option value="ALL">All Partner Studios ({orders.length})</option>
+                    <option value="boutique_1">Darzi & Co. Haute Atelier ({orders.filter(o => o.boutiqueId === 'boutique_1').length})</option>
+                    <option value="boutique_2">Priya Studio Luxe ({orders.filter(o => o.boutiqueId === 'boutique_2').length})</option>
+                  </select>
+                </div>
+              </div>
             </div>
             <div className="flex border border-[#E8E4DA] text-xs">
-              <button onClick={() => setTab('awaiting')} className={`px-4 py-2 uppercase tracking-wider transition-all ${tab === 'awaiting' ? 'bg-neutral-900 text-white' : 'hover:bg-neutral-100'}`}>
+              <button onClick={() => setTab('awaiting')} className={`px-4 py-2 uppercase tracking-wider transition-all ${tab === 'awaiting' ? 'bg-neutral-900 text-white font-semibold' : 'hover:bg-neutral-100'}`}>
                 Awaiting Measurements ({awaitingFitting.length})
               </button>
-              <button onClick={() => setTab('production')} className={`px-4 py-2 uppercase tracking-wider transition-all ${tab === 'production' ? 'bg-neutral-900 text-white' : 'hover:bg-neutral-100'}`}>
+              <button onClick={() => setTab('production')} className={`px-4 py-2 uppercase tracking-wider transition-all ${tab === 'production' ? 'bg-neutral-900 text-white font-semibold' : 'hover:bg-neutral-100'}`}>
                 Active Stitching ({inProduction.length})
               </button>
-              <button onClick={() => setTab('completed')} className={`px-4 py-2 uppercase tracking-wider transition-all ${tab === 'completed' ? 'bg-neutral-900 text-white' : 'hover:bg-neutral-100'}`}>
+              <button onClick={() => setTab('completed')} className={`px-4 py-2 uppercase tracking-wider transition-all ${tab === 'completed' ? 'bg-neutral-900 text-white font-semibold' : 'hover:bg-neutral-100'}`}>
                 Dispatched / Delivered ({completed.length})
               </button>
             </div>
@@ -3445,7 +3561,12 @@
                   <div key={o.id} className="card-luxury p-8 flex flex-col lg:flex-row gap-8">
                     <div className="flex-1 space-y-4">
                       <div className="flex justify-between items-baseline">
-                        <span className="text-xs font-mono text-neutral-400">{o.id}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono text-neutral-400">{o.id}</span>
+                          <span className="text-[10px] uppercase font-mono px-2 py-0.5 bg-[#FAF8F5] border border-[#E8E4DA] text-[#C5A880] font-semibold">
+                            {o.boutiqueName || 'Atelier'}
+                          </span>
+                        </div>
                         <div className="flex items-center gap-2 no-print">
                           <button 
                             onClick={() => window.print()} 
@@ -3590,7 +3711,12 @@
                 <div className="grid md:grid-cols-2 gap-6">
                   {awaitingFitting.map(o => (
                     <div key={o.id} className="card-luxury p-6 space-y-2">
-                      <span className="text-[10px] font-mono text-neutral-400">{o.id}</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-mono text-neutral-400">{o.id}</span>
+                        <span className="text-[9px] uppercase font-mono px-2 py-0.5 bg-[#FAF8F5] border border-[#E8E4DA] text-[#C5A880] font-semibold">
+                          {o.boutiqueName || 'Atelier'}
+                        </span>
+                      </div>
                       <h4 className="text-lg font-serif-luxury">{o.designName}</h4>
                       <p className="text-xs text-neutral-500">
                         {o.customOptions?.sizingMethod === 'sample_garment'
@@ -3622,6 +3748,7 @@
                     <thead>
                       <tr className="border-b border-[#E8E4DA] text-neutral-400 text-[10px] uppercase font-mono">
                         <th className="pb-3">Reference</th>
+                        <th className="pb-3">Atelier</th>
                         <th className="pb-3">Customer</th>
                         <th className="pb-3">Garment</th>
                         <th className="pb-3">Status</th>
@@ -3631,6 +3758,7 @@
                       {completed.map(o => (
                         <tr key={o.id}>
                           <td className="py-3 font-mono">{o.id}</td>
+                          <td className="py-3 font-mono text-[11px] text-[#C5A880] font-medium">{o.boutiqueName || 'Atelier'}</td>
                           <td className="py-3 font-semibold">{o.customerName}</td>
                           <td className="py-3">{o.designName}</td>
                           <td className="py-3 uppercase font-mono text-[10px]">{o.status}</td>
