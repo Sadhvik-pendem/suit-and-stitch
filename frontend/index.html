@@ -345,7 +345,42 @@
         }
       });
       const [activeTab, setActiveTab] = useState('browse');
-      const [orders, setOrders] = useState(INITIAL_ORDERS);
+      const [orders, setOrders] = useState(() => {
+        try {
+          const saved = localStorage.getItem('suit_stitch_orders');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) return parsed;
+          }
+        } catch (e) {}
+        return INITIAL_ORDERS;
+      });
+
+      // Synchronize orders state to localStorage
+      React.useEffect(() => {
+        try {
+          localStorage.setItem('suit_stitch_orders', JSON.stringify(orders));
+        } catch (e) {}
+      }, [orders]);
+
+      const handleDeleteOrder = (orderId) => {
+        setOrders(prev => prev.filter(o => o.id !== orderId));
+        try {
+          const customs = JSON.parse(localStorage.getItem('suit_stitch_custom_options') || '{}');
+          delete customs[orderId];
+          localStorage.setItem('suit_stitch_custom_options', JSON.stringify(customs));
+        } catch (e) {}
+        showToast('Order removed from queue.', 'info');
+      };
+
+      const handleResetAllOrders = () => {
+        setOrders([]);
+        try {
+          localStorage.setItem('suit_stitch_orders', JSON.stringify([]));
+          localStorage.removeItem('suit_stitch_custom_options');
+        } catch (e) {}
+        showToast('All demo orders have been cleared.', 'info');
+      };
       const [boutiques, setBoutiques] = useState(BOUTIQUES_MOCK);
       const [selectedBoutique, setSelectedBoutique] = useState(null);
       const [bookingModalItem, setBookingModalItem] = useState(null);
@@ -880,6 +915,7 @@
                     associateUser={currentUser}
                     fetchOrders={fetchOrders}
                     showToast={showToast}
+                    onDeleteOrder={handleDeleteOrder}
                   />
                 )}
 
@@ -891,6 +927,8 @@
                     fetchOrders={fetchOrders}
                     showToast={showToast}
                     boutiques={boutiques}
+                    onDeleteOrder={handleDeleteOrder}
+                    onResetAllOrders={handleResetAllOrders}
                   />
                 )}
 
@@ -901,6 +939,8 @@
                     currentUser={currentUser}
                     fetchOrders={fetchOrders}
                     showToast={showToast}
+                    onDeleteOrder={handleDeleteOrder}
+                    onResetAllOrders={handleResetAllOrders}
                   />
                 )}
               </>
@@ -917,6 +957,7 @@
                     onBrowse={() => { setActiveTab('browse'); setSelectedBoutique(null); }}
                     showToast={showToast}
                     updateOrderStatus={updateOrderStatus}
+                    onDeleteOrder={handleDeleteOrder}
                   />
                 )}
 
@@ -2689,7 +2730,7 @@
       );
     }
 
-    function CustomerOrdersView({ orders, onBrowse, showToast, updateOrderStatus }) {
+    function CustomerOrdersView({ orders, onBrowse, showToast, updateOrderStatus, onDeleteOrder }) {
       const [reviewOrder, setReviewOrder] = useState(null);
       const [reviews, setReviews] = useState(() => {
         try {
@@ -2772,9 +2813,22 @@
                       <h3 className="text-2xl md:text-3xl font-serif-luxury mt-0.5">{o.designName}</h3>
                       <span className="text-xs text-[#C5A880] font-medium">{o.boutiqueName}</span>
                     </div>
-                    <div className="text-left md:text-right">
+                    <div className="text-left md:text-right flex flex-col items-start md:items-end gap-1">
                       <span className="text-2xl font-serif-luxury block">₹{o.price.toLocaleString('en-IN')}</span>
                       <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-mono">{o.selectedFabric}</span>
+                      {o.status === 'booked' && onDeleteOrder && (
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Cancel order ${o.id}? This will remove it from the tailoring queue.`)) {
+                              onDeleteOrder(o.id);
+                            }
+                          }}
+                          className="mt-1 text-[10px] uppercase tracking-wider text-red-600 hover:text-red-800 border border-red-200 hover:border-red-400 bg-red-50/50 hover:bg-red-50 px-2.5 py-1 rounded transition-colors font-medium flex items-center gap-1 cursor-pointer"
+                          title="Cancel order"
+                        >
+                          <span>✕</span> Cancel Order
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -3025,7 +3079,7 @@
       );
     }
 
-    function AssociatePortalView({ orders, updateOrderStatus, associateUser, fetchOrders, showToast }) {
+    function AssociatePortalView({ orders, updateOrderStatus, associateUser, fetchOrders, showToast, onDeleteOrder }) {
       const [selectedOrderId, setSelectedOrderId] = useState('');
       const [otpInput, setOtpInput] = useState('');
       const [isVerified, setIsVerified] = useState(false);
@@ -3050,6 +3104,9 @@
       const handleVerifyOtp = async (e) => {
         e.preventDefault();
         setLoading(true);
+        const cleanInput = otpInput.trim();
+        const expectedOtp = String(activeOrder?.otp || '').trim();
+
         try {
           const res = await fetch('/api/associate/verify-otp', {
             method: 'POST',
@@ -3059,12 +3116,12 @@
             },
             body: JSON.stringify({
               orderId: selectedOrderId,
-              otp: otpInput.trim()
+              otp: cleanInput
             })
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.success) {
-            setVerificationToken(data.verificationToken);
+            setVerificationToken(data.verificationToken || '');
             setIsVerified(true);
             updateOrderStatus(selectedOrderId, 'associate_arriving');
             if (fetchOrders) fetchOrders();
@@ -3072,6 +3129,13 @@
             setLoading(false);
             return;
           } else if (res.status === 400 && data.message && !data.message.toLowerCase().includes('not found')) {
+            if (expectedOtp && cleanInput === expectedOtp) {
+              setIsVerified(true);
+              updateOrderStatus(selectedOrderId, 'associate_arriving');
+              notify('Doorstep OTP verified locally! Measurement form unlocked.', 'success');
+              setLoading(false);
+              return;
+            }
             notify(`OTP Verification Failed: ${data.message || 'Invalid 4-digit code.'}`, 'error');
             setLoading(false);
             return;
@@ -3081,12 +3145,12 @@
         }
 
         // Local fallback for offline mode or offline orders
-        if (otpInput.trim() === activeOrder?.otp || otpInput.trim() === '1234') {
+        if (expectedOtp && cleanInput === expectedOtp) {
           setIsVerified(true);
           updateOrderStatus(selectedOrderId, 'associate_arriving');
-          notify('Doorstep OTP verified locally!', 'success');
+          notify('Doorstep OTP verified! Measurement form unlocked.', 'success');
         } else {
-          notify('Invalid Security OTP.', 'error');
+          notify('Invalid Security OTP. Please ask customer for their 4-digit code.', 'error');
         }
         setLoading(false);
       };
@@ -3199,12 +3263,27 @@
                         <span className="text-[10px] text-neutral-500 font-medium block mt-1">📏 Home Measurement Visit</span>
                       )}
                     </div>
-                    <button 
-                      onClick={() => { setSelectedOrderId(a.id); updateOrderStatus(a.id, 'associate_arriving'); }} 
-                      className="btn-luxury-solid !py-2 !px-4 text-[10px]"
-                    >
-                      {a.customOptions?.sizingMethod === 'sample_garment' ? 'Start Sample Pickup' : 'Start Home Visit'}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {onDeleteOrder && (
+                        <button 
+                          onClick={() => {
+                            if (window.confirm(`Remove visit appointment ${a.id}?`)) {
+                              onDeleteOrder(a.id);
+                            }
+                          }}
+                          className="text-neutral-400 hover:text-red-600 p-1.5 text-xs transition-colors cursor-pointer"
+                          title="Clear Demo Order"
+                        >
+                          ✕
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => { setSelectedOrderId(a.id); updateOrderStatus(a.id, 'associate_arriving'); }} 
+                        className="btn-luxury-solid !py-2 !px-4 text-[10px]"
+                      >
+                        {a.customOptions?.sizingMethod === 'sample_garment' ? 'Start Sample Pickup' : 'Start Home Visit'}
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -3255,7 +3334,7 @@
                 <form onSubmit={handleVerifyOtp} className="p-6 border border-[#E8E4DA] bg-white text-center space-y-4">
                   <span className="text-[10px] uppercase tracking-widest text-[#C5A880] block font-semibold">OTP Verification</span>
                   <h3 className="text-xl font-serif-luxury">Enter Customer's 4-Digit OTP</h3>
-                  <p className="text-xs text-neutral-400">Ask the customer for the 4-digit code shown on their screen. (Demo OTP: <strong>{activeOrder.otp}</strong>)</p>
+                  <p className="text-xs text-neutral-500">Ask the customer for the 4-digit code shown on their screen. <span className="text-[#C5A880] font-semibold font-mono">(Customer OTP: {activeOrder?.otp || '----'})</span></p>
                   <input 
                     type="text" 
                     maxLength={4} 
@@ -3402,7 +3481,7 @@
       );
     }
 
-    function BoutiquePartnerView({ orders, updateOrderStatus, currentUser, fetchOrders, showToast, boutiques }) {
+    function BoutiquePartnerView({ orders, updateOrderStatus, currentUser, fetchOrders, showToast, boutiques, onDeleteOrder, onResetAllOrders }) {
       const [tab, setTab] = useState('production');
       const [loadingId, setLoadingId] = useState(null);
       const [selectedBoutiqueId, setSelectedBoutiqueId] = useState(() => currentUser?.boutiqueId || 'ALL');
@@ -3523,6 +3602,19 @@
                     ))}
                   </select>
                 </div>
+                {onResetAllOrders && (
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Reset all demo orders across all boutiques?')) {
+                        onResetAllOrders();
+                      }
+                    }}
+                    className="text-[10px] uppercase font-mono tracking-wider text-neutral-400 hover:text-red-600 border border-dashed border-[#E8E4DA] hover:border-red-300 px-2 py-1 rounded transition-colors"
+                    title="Reset All Orders"
+                  >
+                    Reset All Orders
+                  </button>
+                )}
               </div>
             </div>
             <div className="flex border border-[#E8E4DA] text-xs">
@@ -3552,6 +3644,19 @@
                           </span>
                         </div>
                         <div className="flex items-center gap-2 no-print">
+                          {onDeleteOrder && (
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Clear demo order ${o.id}?`)) {
+                                  onDeleteOrder(o.id);
+                                }
+                              }}
+                              className="text-[10px] uppercase tracking-widest text-neutral-400 hover:text-red-600 border border-[#E8E4DA] hover:border-red-300 px-2.5 py-1 transition-all cursor-pointer"
+                              title="Clear Demo Order"
+                            >
+                              ✕ Clear
+                            </button>
+                          )}
                           <button 
                             onClick={() => window.print()} 
                             className="text-[10px] uppercase tracking-widest text-neutral-700 border border-[#E8E4DA] px-3 py-1 hover:border-black transition-all flex items-center gap-1.5"
@@ -3696,7 +3801,22 @@
                   {awaitingFitting.map(o => (
                     <div key={o.id} className="card-luxury p-6 space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-mono text-neutral-400">{o.id}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono text-neutral-400">{o.id}</span>
+                          {onDeleteOrder && (
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Clear demo order ${o.id}?`)) {
+                                  onDeleteOrder(o.id);
+                                }
+                              }}
+                              className="text-[10px] text-neutral-400 hover:text-red-600 transition-colors cursor-pointer"
+                              title="Clear Demo Order"
+                            >
+                              ✕ Clear
+                            </button>
+                          )}
+                        </div>
                         <span className="text-[9px] uppercase font-mono px-2 py-0.5 bg-[#FAF8F5] border border-[#E8E4DA] text-[#C5A880] font-semibold">
                           {o.boutiqueName || 'Atelier'}
                         </span>
@@ -3768,7 +3888,7 @@
       );
     }
 
-    function DeliveryPartnerView({ orders, updateOrderStatus, currentUser, fetchOrders, showToast }) {
+    function DeliveryPartnerView({ orders, updateOrderStatus, currentUser, fetchOrders, showToast, onDeleteOrder, onResetAllOrders }) {
       const [loadingId, setLoadingId] = useState(null);
       const activeShipments = orders.filter(o => o.status === 'dispatched' || o.status === 'in_production');
 
@@ -3830,9 +3950,24 @@
 
       return (
         <div className="max-w-2xl mx-auto card-luxury p-8 md:p-10 space-y-6 animate-fade-in">
-          <div className="border-b border-[#E8E4DA] pb-4">
-            <span className="text-[10px] uppercase tracking-widest text-[#C5A880] block font-semibold">Delivery Fleet Portal</span>
-            <h2 className="text-2xl md:text-3xl font-serif-luxury">Active Pickups & Deliveries</h2>
+          <div className="border-b border-[#E8E4DA] pb-4 flex justify-between items-center">
+            <div>
+              <span className="text-[10px] uppercase tracking-widest text-[#C5A880] block font-semibold">Delivery Fleet Portal</span>
+              <h2 className="text-2xl md:text-3xl font-serif-luxury">Active Pickups & Deliveries</h2>
+            </div>
+            {onResetAllOrders && (
+              <button
+                onClick={() => {
+                  if (window.confirm('Reset all demo orders from delivery queue?')) {
+                    onResetAllOrders();
+                  }
+                }}
+                className="text-[10px] uppercase font-mono tracking-wider text-neutral-400 hover:text-red-600 border border-dashed border-[#E8E4DA] hover:border-red-300 px-2 py-1 rounded transition-colors cursor-pointer"
+                title="Reset All Orders"
+              >
+                Reset All
+              </button>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -3840,7 +3975,22 @@
               activeShipments.map(o => (
                 <div key={o.id} className="p-6 border border-[#E8E4DA] bg-neutral-50 space-y-3 hover:border-[#C5A880] transition-colors">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xs font-mono font-bold text-neutral-900">{o.id}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-neutral-900">{o.id}</span>
+                      {onDeleteOrder && (
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Clear demo order ${o.id}?`)) {
+                              onDeleteOrder(o.id);
+                            }
+                          }}
+                          className="text-[10px] text-neutral-400 hover:text-red-600 transition-colors cursor-pointer"
+                          title="Clear Demo Order"
+                        >
+                          ✕ Clear
+                        </button>
+                      )}
+                    </div>
                     <span className="text-[9px] uppercase tracking-widest bg-neutral-200 px-2 py-0.5 font-semibold">
                       {o.status === 'in_production' ? 'Ready for Boutique Pickup' : 'Out for Delivery'}
                     </span>
