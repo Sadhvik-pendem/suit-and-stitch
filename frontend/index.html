@@ -398,6 +398,44 @@
         return () => window.removeEventListener('keydown', handleKeyDown);
       }, []);
 
+      // Client-Side Session Verification Guard
+      React.useEffect(() => {
+        const storedUser = localStorage.getItem('suit_stitch_auth_user');
+        if (!storedUser) return;
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed && parsed.token) {
+            fetch('/api/auth/me', {
+              headers: { 'Authorization': `Bearer ${parsed.token}` }
+            })
+            .then(res => {
+              if (res.status === 401 || res.status === 403) {
+                // Token rejected or expired: reset user to null and clear localStorage to prevent spoofing
+                console.warn('[Session Guard] Token invalidated by server. Clearing session.');
+                localStorage.removeItem('suit_stitch_auth_user');
+                setCurrentUser(null);
+                showToast('Your session has expired. Please sign in again.', 'info');
+              } else if (res.ok) {
+                return res.json().then(data => {
+                  if (data && data.success && data.user) {
+                    const refreshed = { ...parsed, ...data.user, token: parsed.token };
+                    setCurrentUser(refreshed);
+                    localStorage.setItem('suit_stitch_auth_user', JSON.stringify(refreshed));
+                  }
+                });
+              }
+            })
+            .catch(err => {
+              // Server waking up or offline: allow session to remain active in demo mode
+              console.log('[Session Guard] Server offline or waking up; maintaining demo session.', err);
+            });
+          }
+        } catch (e) {
+          localStorage.removeItem('suit_stitch_auth_user');
+          setCurrentUser(null);
+        }
+      }, []);
+
       // Server health & cold-start detector
       React.useEffect(() => {
         let isMounted = true;
@@ -3433,9 +3471,31 @@
         setLoadingId(null);
       };
 
-      const handlePrintPatternCard = (orderId) => {
-        const tokenQuery = currentUser?.token ? `?token=${encodeURIComponent(currentUser.token)}` : '';
-        window.open(`/api/production/orders/${orderId}/pattern-card${tokenQuery}`, '_blank');
+      const handlePrintPatternCard = async (orderId) => {
+        try {
+          const res = await fetch(`/api/production/orders/${orderId}/pattern-card`, {
+            headers: currentUser?.token ? { 'Authorization': `Bearer ${currentUser.token}` } : {}
+          });
+          if (res.ok) {
+            const blob = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const printWindow = window.open(blobUrl, '_blank');
+            if (!printWindow) {
+              const a = document.createElement('a');
+              a.href = blobUrl;
+              a.download = `NaapCard-${orderId}.pdf`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            }
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+            return;
+          }
+        } catch (e) {
+          // Fallback to local print preview
+        }
+        notify('PDF generator offline. Opening physical Measurement Slip print view.', 'info');
+        window.print();
       };
 
       return (
